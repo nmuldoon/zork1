@@ -1,0 +1,103 @@
+:root {
+  --bg: #0b0e14;
+  --panel: #11161f;
+  --border: #2a3342;
+  --fg: #c9d1d9;
+  --muted: #6e7a8a;
+  --accent: #e3b341;
+  --cmd: #58c4dc;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--mono); }
+
+.status {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; gap: 16px; align-items: center;
+  padding: 6px 16px; background: #1b2230; border-bottom: 1px solid var(--border);
+}
+.brand { color: var(--accent); font-weight: bold; letter-spacing: .15em; }
+.status-location { flex: 1; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status-nums { color: var(--muted); white-space: nowrap; }
+.status-nums b { color: var(--fg); }
+
+.layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  gap: 12px; padding: 12px 16px; height: calc(100% - 38px);
+}
+.col-main, .col-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.col-side { overflow-y: auto; }
+
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+.panel-title { color: var(--accent); font-weight: bold; margin-bottom: 4px; }
+.muted { color: var(--muted); font-weight: normal; }
+
+pre { margin: 0; font-family: var(--mono); }
+.art { font-size: clamp(8px, 1.15vw, 14px); line-height: 1.2; overflow: hidden; white-space: pre; min-height: 11.5em; }
+.map { font-size: clamp(8px, 0.95vw, 12px); line-height: 1.25; overflow-x: auto; white-space: pre; min-height: 6em; }
+
+.transcript-panel { flex: 1; display: flex; flex-direction: column; min-height: 220px; }
+.transcript { flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; padding-right: 4px; }
+.transcript .room-title { color: var(--accent); font-weight: bold; }
+.transcript .cmd { color: var(--cmd); }
+.transcript .sys { color: var(--muted); font-style: italic; }
+.transcript .danger { color: #ff7b72; }
+.transcript .good { color: #7ee787; }
+
+.prompt { display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px; }
+.caret { color: var(--cmd); font-weight: bold; }
+.prompt input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--cmd); font: inherit; caret-color: var(--cmd);
+}
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.actions button, .vertical button {
+  background: #1b2230; color: var(--fg); border: 1px solid var(--border); border-radius: 4px;
+  font: 13px var(--mono); padding: 3px 8px; cursor: pointer;
+}
+.actions button:hover, .vertical button:hover { border-color: var(--cmd); color: var(--cmd); }
+.actions button.exit { color: #7ee787; }
+.vertical { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+.inventory { list-style: none; margin: 0; padding: 0; }
+.inventory li::before { content: "• "; color: var(--accent); }
+.inventory .empty::before { content: ""; }
+.inventory .empty { color: var(--muted); font-style: italic; }
+.help p { margin: 4px 0; color: var(--muted); font-size: 13px; }
+kbd { border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; color: var(--fg); }
+
+/* map */
+.m-here { color: #000; background: var(--accent); font-weight: bold; }
+.m-room { color: var(--fg); }
+.m-unknown { color: var(--muted); }
+.m-path { color: #7ee787; }
+.m-cond { color: #d29922; }
+
+/* art palette */
+.c-fg { color: #c9d1d9; }
+.c-dim { color: #545d68; }
+.c-white { color: #f0f6fc; }
+.c-grey { color: #8b949e; }
+.c-coal { color: #484f58; }
+.c-blue { color: #388bfd; }
+.c-sky { color: #79c0ff; }
+.c-cyan { color: #39d0d8; }
+.c-green { color: #3fb950; }
+.c-lime { color: #a5d6a7; }
+.c-yellow { color: #f2cc60; }
+.c-gold { color: #e3b341; }
+.c-orange { color: #f0883e; }
+.c-red { color: #ff7b72; }
+.c-brown { color: #b0773a; }
+.c-tan { color: #d4b483; }
+.c-violet { color: #bc8cff; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; height: auto; }
+  .transcript-panel { min-height: 50vh; }
+  .transcript { max-height: 60vh; }
+  .art { font-size: 2.05vw; }
+  .map { font-size: 1.9vw; }
+  .status-nums { font-size: 12px; }
+}

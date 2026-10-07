@@ -10,6 +10,10 @@ Further information on Zork I:
 * [The Infocom Gallery](http://gallery.guetech.org/zork1/zork1.html)
 * [IFWiki](http://www.ifwiki.org/index.php/Zork_I)
 
+__Play in a Browser__
+
+Open [`web/index.html`](web/index.html) to play the compiled game with coloured ASCII art, an auto-drawn map and an inventory panel. See [`web/README.md`](web/README.md).
+
 __What is this Repository?__
 
 This repository is a directory of source code for the Infocom game "Zork I", including a variety of files both used and discarded in the production of the game. It is written in ZIL (Zork Implementation Language), a refactoring of MDL (Muddle), itself a dialect of LISP created by MIT students and staff.
