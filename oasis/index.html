@@ -101,6 +101,7 @@ input[type="text"]:focus { border-color: var(--cyan); outline: none; }
 input[type="range"] { width: 100%; accent-color: var(--gold); }
 
 .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.choices.cols4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .choices.small { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 .opt {
   text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
@@ -136,6 +137,7 @@ input[type="range"] { width: 100%; accent-color: var(--gold); }
 textarea#sheet { width: 100%; min-height: 160px; background: var(--void); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font: 18px/1.2 var(--data); padding: 10px; }
 .foot { color: var(--muted); font-size: 12px; text-align: center; }
 
+@media (max-width: 640px) { .choices.cols4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .rig { position: static; display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr); align-items: start; }
@@ -203,30 +205,46 @@ const RACES = [
   { id: 'undead', name: 'Undead', d: 'Back from the respawn queue, a little stitched.', mod: { VIT: 4, CHA: -2, INT: 1 } },
 ];
 const CLASSES = [
-  { id: 'warrior', name: 'Warrior', d: 'Front-line fighter.', color: '#ff6f61', mod: { STR: 3, VIT: 2 },
-    subs: [['Gladiator', 'Arena champion with sword and shield'], ['Paladin', 'Holy knight who protects allies'], ['Berserker', 'Gets stronger the more damage taken']] },
-  { id: 'mage', name: 'Mage', d: 'Spellcaster.', color: '#a77bff', mod: { INT: 4, CHA: 1 },
-    subs: [['Pyromancer', 'Master of fire spells'], ['Chronomancer', 'Bends and rewinds time'], ['Illusionist', 'Creates decoys and phantoms']] },
-  { id: 'rogue', name: 'Rogue', d: 'Stealth and tricks.', color: '#4fd1a5', mod: { STR: 1, CHA: 2, INT: 1 },
-    subs: [['Assassin', 'Strikes from the shadows'], ['Thief', 'Picks locks and pockets'], ['Gunslinger', 'Fastest blaster in the sector']] },
-  { id: 'ranger', name: 'Ranger', d: 'Wilderness expert.', color: '#8bd450', mod: { STR: 1, INT: 1, VIT: 2 },
-    subs: [['Beastmaster', 'Fights alongside their companion'], ['Sniper', 'Hits targets from a planet away'], ['Scout', 'Maps new worlds first']] },
-  { id: 'hacker', name: 'Hacker', d: 'Breaks the rules of the sim.', color: '#59e3ff', mod: { INT: 5 },
-    subs: [['Code Breaker', 'Cracks locked doors and safes'], ['Glitch Runner', 'Phases through walls using bugs'], ['Netrunner', 'Hijacks drones and turrets']] },
-  { id: 'cleric', name: 'Cleric', d: 'Healer and support.', color: '#ffe066', mod: { CHA: 2, VIT: 2, INT: 1 },
-    subs: [['Medic', 'Patches up the whole party'], ['Oracle', 'Sees glimpses of what comes next'], ['Druid', 'Draws power from nature']] },
-  { id: 'engineer', name: 'Engineer', d: 'Builds gear and vehicles.', color: '#ff9f43', mod: { INT: 3, STR: 1, VIT: 1 },
-    subs: [['Mech Pilot', 'Drives a giant battle robot'], ['Gadgeteer', 'Has a gadget for everything'], ['Demolitionist', 'Solves problems with explosives']] },
-  { id: 'bard', name: 'Bard', d: 'Performer who buffs allies.', color: '#ff7ad9', mod: { CHA: 5 },
-    subs: [['DJ', 'Drops beats that boost the team'], ['Rock Star', 'Guitar solos that stun enemies'], ['Arcade Champ', 'Never lost a classic cabinet game']] },
+  { id: 'paladin', name: 'Paladin', d: 'Holy knight in shining armor.', color: '#ffd76a', mod: { STR: 2, VIT: 2, CHA: 1 },
+    subs: [['Oathkeeper', 'Sworn protector of the weak'], ['Crusader', 'Charges into battle with a holy blade'], ['Lightbringer', 'Smites darkness with radiant power']] },
+  { id: 'guardian', name: 'Guardian', d: 'Shield wall and protector.', color: '#6fa8ff', mod: { VIT: 4, STR: 1 },
+    subs: [['Shieldbearer', 'Blocks attacks aimed at allies'], ['Warden', 'Holds the line at any gate'], ['Juggernaut', 'Unstoppable heavy armor']] },
+  { id: 'monk', name: 'Monk', d: 'Martial artist of mind and body.', color: '#ff9f43', mod: { STR: 2, VIT: 1, INT: 1 },
+    subs: [['Way of the Fist', 'Lightning-fast unarmed strikes'], ['Way of the Wind', 'Moves like air, hard to hit'], ['Way of the Mind', 'Inner focus and calm power']] },
+  { id: 'barbarian', name: 'Barbarian', d: 'Wild warrior fuelled by rage.', color: '#e94b3c', mod: { STR: 4, VIT: 2, INT: -1 },
+    subs: [['Berserker', 'Gets stronger the more damage taken'], ['Wildheart', 'Channels the spirit of a beast'], ['Stormborn', 'Rage crackles like thunder']] },
+  { id: 'assassin', name: 'Assassin', d: 'Silent killer in the shadows.', color: '#9d7bff', mod: { CHA: 1, INT: 2 },
+    subs: [['Shadowblade', 'Strikes from darkness'], ['Poisoner', 'Coats blades with venom'], ['Phantom', 'Vanishes after every kill']] },
+  { id: 'bard', name: 'Bard', d: 'Musician whose songs are magic.', color: '#ff7ad9', mod: { CHA: 5 },
+    subs: [['Minstrel', 'Songs that heal and inspire'], ['Skald', 'War chants that boost allies'], ['Trickster', 'Charms and confuses enemies']] },
+  { id: 'swashbuckler', name: 'Swashbuckler', d: 'Daring duelist with flair.', color: '#4fd1a5', mod: { CHA: 2, STR: 1, INT: 1 },
+    subs: [['Duelist', 'One-on-one sword master'], ['Corsair', 'Pirate of the high seas'], ['Daredevil', 'Pulls off impossible stunts']] },
+  { id: 'ranger', name: 'Ranger', d: 'Archer and wilderness tracker.', color: '#8bd450', mod: { INT: 1, VIT: 2, STR: 1 },
+    subs: [['Beastmaster', 'Fights alongside their companion'], ['Sharpshooter', 'Never misses a shot'], ['Pathfinder', 'Tracks anything, anywhere']] },
+  { id: 'cleric', name: 'Cleric', d: 'Healer blessed by the gods.', color: '#f2f2f2', mod: { CHA: 2, VIT: 2, INT: 1 },
+    subs: [['Life Domain', 'Master healer of the party'], ['War Domain', 'Battle priest with a mace'], ['Light Domain', 'Blinding holy light']] },
+  { id: 'druid', name: 'Druid', d: 'Guardian of nature.', color: '#3ecf8e', mod: { INT: 2, VIT: 2, CHA: 1 },
+    subs: [['Circle of the Moon', 'Shapeshifts into wild beasts'], ['Circle of the Land', 'Draws power from the earth'], ['Circle of Spores', 'Commands fungus and decay']] },
+  { id: 'shaman', name: 'Shaman', d: 'Speaks with spirits.', color: '#c0a060', mod: { INT: 2, CHA: 2, VIT: 1 },
+    subs: [['Spirit Caller', 'Summons ancestor spirits'], ['Totem Keeper', 'Plants totems that buff allies'], ['Storm Shaman', 'Calls lightning and wind']] },
+  { id: 'alchemist', name: 'Alchemist', d: 'Potion brewer and tinkerer.', color: '#ffbf2f', mod: { INT: 4, VIT: 1 },
+    subs: [['Potion Master', 'Brews powerful elixirs'], ['Bomber', 'Throws explosive flasks'], ['Mutagenist', 'Drinks potions to transform']] },
+  { id: 'mage', name: 'Mage', d: 'Master of arcane spells.', color: '#a77bff', mod: { INT: 5 },
+    subs: [['Pyromancer', 'Fire spells'], ['Cryomancer', 'Ice spells'], ['Arcanist', 'Pure arcane force']] },
+  { id: 'enchanter', name: 'Enchanter', d: 'Weaves spells into minds and gear.', color: '#ff6f61', mod: { INT: 3, CHA: 2 },
+    subs: [['Mesmerist', 'Puts enemies into a trance'], ['Runesmith', 'Carves magic runes into weapons'], ['Illusionist', 'Creates decoys and phantoms']] },
+  { id: 'summoner', name: 'Summoner', d: 'Calls creatures to fight for them.', color: '#59e3ff', mod: { INT: 3, CHA: 1, VIT: 1 },
+    subs: [['Beastcaller', 'Summons wild animals'], ['Elementalist', 'Summons fire, water, earth and air spirits'], ['Demonologist', 'Binds creatures from other realms']] },
+  { id: 'necromancer', name: 'Necromancer', d: 'Commands death and the undead.', color: '#7c8a99', mod: { INT: 4, VIT: 1, CHA: -1 },
+    subs: [['Bone Lord', 'Raises skeleton armies'], ['Soul Reaper', 'Drains life from enemies'], ['Plaguebringer', 'Spreads curses and sickness']] },
 ];
 const POWERS = [
-  ['Teleport', 'Blink to any spot you can see'], ['Invisibility', 'Vanish for 10 seconds'], ['Flight', 'Soar above the battlefield'],
-  ['Super Strength', 'Lift cars, punch through walls'], ['Time Slow', 'Everything else moves at half speed'], ['Force Field', 'A bubble that blocks attacks'],
-  ['Shapeshift', 'Take the form of an animal'], ['Fireball', 'Throw blazing orbs'], ['Lightning', 'Chain-zap a group of enemies'],
-  ['Healing', 'Restore health to yourself or allies'], ['Mind Read', "Hear an NPC's thoughts"], ['Clone', 'Summon a copy of yourself'],
-  ['Gravity Control', 'Flip or crush with gravity'], ['Night Vision', 'See perfectly in the dark'], ['Wall Climb', 'Run up walls and ceilings'],
-  ['Extra Life', 'Respawn once without losing coins'],
+  ['Fire', 'Throw flames and fireballs'], ['Ice', 'Freeze enemies and build ice walls'], ['Nature Control', 'Command plants, vines and trees'],
+  ['Animal Shifting', 'Create animals or turn into one'], ['Super Strength', 'Lift cars, punch through walls'], ['Airbending', 'Push, lift and blast with wind'],
+  ['Electricity', 'Shoot lightning from your hands'], ['Barrier Creation', 'Raise shields that block attacks'], ['Energy Blast', 'Fire beams of pure energy'],
+  ['Super Speed', 'Move faster than the eye can see'], ['Agility', 'Flip, dodge and wall-run'], ['Mind Reading', "Hear other players' thoughts"],
+  ['Telekinesis', 'Move objects with your mind'], ['Shadow Control', 'Bend shadows and hide in darkness'], ['Flying', 'Soar above the battlefield'],
+  ['Accuracy', 'Never miss a shot or throw'], ['Healing', 'Restore health to yourself or allies'],
 ];
 const SKIN = ['#ffe0c7', '#f6cba5', '#eab388', '#d49a6a', '#b97d4f', '#9a6238', '#7a4a2a', '#5a3520', '#3e2416', '#2b1a10', '#7fc97f', '#7aaee8', '#c3a2ef', '#c9d1d9'];
 const SKIN_NAMES = ['Porcelain', 'Fair', 'Light', 'Warm beige', 'Tan', 'Honey', 'Bronze', 'Brown', 'Deep brown', 'Ebony', 'Goblin green', 'Frost blue', 'Lilac', 'Chrome'];
@@ -272,8 +290,8 @@ const TABS = [
 ];
 
 const DEFAULT = {
-  name: 'Parzival', age: 18, race: 'human', cls: 'hacker', sub: 'Glitch Runner',
-  powers: ['Teleport', 'Time Slow'], speed: 7, height: 175, weight: 68, skin: 3,
+  name: 'Parzival', age: 18, race: 'human', cls: 'ranger', sub: 'Pathfinder',
+  powers: ['Super Speed', 'Electricity'], speed: 7, height: 175, weight: 68, skin: 3,
   hairStyle: 'Spiky', hairColor: 1, eyeColor: 2, eyeShape: 'Almond',
   outfit: { headwear: 'VR Visor', top: 'T-shirt', outer: 'Leather jacket', bottoms: 'Jeans', shoes: 'High-tops', gloves: 'Haptic gloves', accessory: 'None' },
   topColor: 5, outerColor: 10, bottomColor: 5,
@@ -287,6 +305,10 @@ function load(seed) {
   try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
   S = Object.assign(structuredClone(DEFAULT), seed && Object.keys(seed).length ? seed : saved || {});
   S.outfit = Object.assign({}, DEFAULT.outfit, S.outfit);
+  // Drop anything left over from an older save that no longer exists.
+  if (!CLASSES.some(c => c.id === S.cls)) { S.cls = DEFAULT.cls; S.sub = DEFAULT.sub; }
+  if (!CLASSES.find(c => c.id === S.cls).subs.some(x => x[0] === S.sub)) S.sub = CLASSES.find(c => c.id === S.cls).subs[0][0];
+  S.powers = (S.powers || []).filter(p => POWERS.some(x => x[0] === p)).slice(0, 2);
   if (!Array.isArray(S.weapons)) S.weapons = DEFAULT.weapons.slice();
   if (!Array.isArray(S.items)) S.items = DEFAULT.items.slice();
 }
@@ -323,6 +345,7 @@ function stats() {
   const st = { STR: 5, AGI: S.speed, INT: 5, CHA: 5, VIT: 5 };
   for (const m of [race().mod, cls().mod]) for (const [k, v] of Object.entries(m)) st[k] += v;
   if (S.powers.includes('Super Strength')) st.STR += 2;
+  if (S.powers.includes('Super Speed') || S.powers.includes('Agility')) st.AGI += 1;
   if (S.powers.includes('Healing')) st.VIT += 1;
   if (S.height > 195) st.STR += 1;
   for (const w of S.weapons) { const def = WEAPONS.find(x => x[0] === w); if (def) st[def[2]] += 1; }
@@ -442,7 +465,6 @@ function drawAvatar(t) {
   if (o.top === 'Hoodie') { P(tx + 2, torsoY + torsoH - 4, tw - 4, 3, shade(topC, -0.15)); P(cx - 1, torsoY, 1, 4, '#f2f2f2'); P(cx + 1, torsoY, 1, 4, '#f2f2f2'); }
   if (o.top === 'Armor plate') { P(tx - 1, torsoY - 1, 4, 3, '#c9d1d9'); P(tx + tw - 3, torsoY - 1, 4, 3, '#c9d1d9'); for (let y = torsoY + 3; y < torsoY + torsoH; y += 3) P(tx + 1, y, tw - 2, 1, '#6b7386'); P(cx - 1, torsoY + 3, 2, 2, accent); }
   if (o.top === 'Tux shirt') { P(cx - 2, torsoY, 4, 1, '#14101f'); P(cx - 1, torsoY + 1, 2, 1, '#14101f'); for (let y = torsoY + 3; y < torsoY + torsoH; y += 2) P(cx, y, 1, 1, '#14101f'); }
-  if (o.top === 'T-shirt' && S.cls === 'hacker') P(cx - 2, torsoY + 3, 4, 3, shade(topC, 0.35));
   if (o.top === 'Robe') { P(cx - 1, torsoY, 2, torsoH + legH, shade(topC, -0.2)); P(tx - 1, legY - 1, tw + 2, 1, '#ffc94a'); }
 
   // outerwear
@@ -557,7 +579,9 @@ function drawAvatar(t) {
   }
 
   // power sparks
-  const sparkCols = { Fireball: '#ff7a2f', Lightning: '#59e3ff', Healing: '#7cf2a6', 'Force Field': '#a77bff', Flight: '#f2f2f2', Invisibility: '#9d96cc', Teleport: '#ff7ad9', 'Time Slow': '#ffc94a' };
+  const sparkCols = { Fire: '#ff7a2f', Ice: '#bfe9ff', 'Nature Control': '#3ecf8e', 'Animal Shifting': '#c8935a', Airbending: '#f2f2f2', Electricity: '#59e3ff',
+    'Barrier Creation': '#a77bff', 'Energy Blast': '#ffd23f', 'Super Speed': '#ff6f61', Agility: '#4fd1a5', 'Mind Reading': '#ff7ad9', Telekinesis: '#b56cff',
+    'Shadow Control': '#5a4a7a', Flying: '#dfe7ff', Accuracy: '#ff9f43', Healing: '#7cf2a6', 'Super Strength': '#e94b3c' };
   if (!reduce) S.powers.forEach((p, i) => {
     const c = sparkCols[p] || accent, a = t / 500 + i * Math.PI;
     P(cx + Math.round(Math.cos(a) * 13), torsoY + 4 + Math.round(Math.sin(a) * 6), 1, 1, c);
@@ -569,8 +593,8 @@ let raf;
 function loop(t) { drawAvatar(t); raf = requestAnimationFrame(loop); }
 
 // ======================= UI =======================
-function chooser(items, current, onPick, { small = false, disabled = () => false } = {}) {
-  return h('div', { class: 'choices' + (small ? ' small' : '') }, items.map(([val, title, desc]) =>
+function chooser(items, current, onPick, { small = false, cols4 = false, disabled = () => false } = {}) {
+  return h('div', { class: 'choices' + (small ? ' small' : '') + (cols4 ? ' cols4' : '') }, items.map(([val, title, desc]) =>
     h('button', { class: 'opt', type: 'button', 'aria-pressed': String(current(val)), disabled: disabled(val), on: { click: () => onPick(val) } },
       h('b', {}, title), desc ? h('small', {}, desc) : null)));
 }
@@ -602,7 +626,7 @@ const PANES = {
     return [
       h('h2', {}, 'Class & subclass'),
       h('p', { class: 'lead' }, 'Your class sets your main stats. The subclass is your specialty inside it.'),
-      field('Class', chooser(CLASSES.map(k => [k.id, k.name, k.d]), v => v === S.cls, v => { const nc = CLASSES.find(k => k.id === v); set({ cls: v, sub: nc.subs[0][0] }); })),
+      field('Class', chooser(CLASSES.map(k => [k.id, k.name, k.d]), v => v === S.cls, v => { const nc = CLASSES.find(k => k.id === v); set({ cls: v, sub: nc.subs[0][0] }); }, { cols4: true })),
       field(`${c.name} subclass`, chooser(c.subs.map(([n, d]) => [n, n, d]), v => v === S.sub, v => set({ sub: v }))),
     ];
   },
@@ -610,7 +634,7 @@ const PANES = {
     const full = S.powers.length >= 2;
     return [
       h('h2', {}, 'Pick two powers'),
-      h('p', { class: 'lead' }, 'Choose exactly two. Tap a chosen power again to swap it out.'),
+      h('p', { class: 'lead' }, 'Choose exactly two of the 17. Tap a chosen power again to swap it out.'),
       h('div', { class: 'field' },
         h('div', { class: 'label' }, h('span', {}, 'Powers'), h('span', { class: 'counter' }, `${S.powers.length} / 2`)),
         chooser(POWERS.map(([n, d]) => [n, n, d]), v => S.powers.includes(v), v => {
