@@ -69,6 +69,36 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .owner-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .owner-row input { flex: 1 1 180px; }
 .note.ok { color: var(--ok); }
+.select { background: var(--void); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font: 600 16px var(--body); padding: 10px 12px; max-width: 100%; }
+.btn.small { padding: 5px 10px; font-size: 13px; white-space: nowrap; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.subtabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.subtab { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.subtab[aria-selected="true"] { color: #1d1500; background: var(--gold); border-color: var(--gold); }
+.quests { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.quest { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
+.quest b { display: block; font-size: 16px; }
+.quest small { color: var(--muted); font-size: 13px; }
+.quest-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 18px/1 var(--data); color: var(--cyan); }
+.quest .btn { align-self: flex-start; }
+.qlog { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.qlog .fail { color: var(--muted); }
+.items { display: flex; flex-direction: column; gap: 6px; }
+.item-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--rc); }
+.item-glyph { color: var(--rc); font-size: 18px; text-align: center; }
+.item-text b { display: block; font-size: 14px; }
+.item-text small { display: block; color: var(--muted); font-size: 12px; }
+.item-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.owned { font: 18px/1 var(--data); color: var(--muted); }
+.r-c { --rc: #9aa0ad; } .r-u { --rc: #3ecf8e; } .r-r { --rc: #3a8bff; } .r-v { --rc: #b56cff; } .r-x { --rc: #ffc94a; }
+.item-row.r-x { background: linear-gradient(90deg, rgba(255,201,74,.12), var(--panel-2) 60%); }
+.loot { color: var(--rc); }
+blockquote.npc { margin: 0; padding: 10px 14px; border-left: 3px solid var(--gold); background: var(--panel-2); border-radius: 0 8px 8px 0; font-style: italic; }
+blockquote.npc cite { display: block; font-style: normal; color: var(--muted); font-size: 13px; margin-top: 4px; }
+.bag-ico { width: 14px; height: 14px; border-radius: 3px 3px 5px 5px; background: #8a5a3b; box-shadow: inset 0 3px 0 rgba(0,0,0,.3); flex: none; }
+.bag.rainbow .bag-ico { background: linear-gradient(90deg, #ff3b3b, #ffd23f, #3ecf8e, #3a8bff, #a77bff); }
+.bag-sections { display: flex; flex-direction: column; gap: 16px; padding-top: 14px; }
+@media (max-width: 480px) { .item-row { grid-template-columns: 22px minmax(0, 1fr); } .item-actions { grid-column: 1 / -1; justify-content: flex-start; } }
 .rainbow-grad, .btn.rainbow { background: linear-gradient(90deg, #ff3b3b, #ff9f43, #ffd23f, #3ecf8e, #3a8bff, #a77bff); }
 .btn.rainbow { color: #0a0a0a; border-color: transparent; }
 .bag { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--panel-2); }
@@ -230,6 +260,7 @@ textarea#sheet { width: 100%; min-height: 160px; background: var(--void); color:
 </div>
 <div class="toast" id="toast" hidden></div>
 <dialog class="lore" id="lore" aria-labelledby="lore-title"></dialog>
+<dialog class="lore" id="bagdlg" aria-label="Bag"></dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <script>
@@ -319,7 +350,7 @@ function outfitNow() {
   if (!isOwner()) for (const k in o) if (EXCLUSIVE_ITEMS.has(o[k])) o[k] = DEFAULT.outfit[k];
   return o;
 }
-const gems = () => isOwner() ? 10000 : 100;
+const gems = () => S.gems;
 const OUTFIT = {
   headwear: { label: 'Headwear', items: ['None', 'Cap', 'Beanie', 'Headphones', 'Crown', 'Helmet', 'VR Visor', 'Wizard Hat'] },
   top: { label: 'Top', items: ['T-shirt', 'Hoodie', 'Tank top', 'Armor plate', 'Robe', 'Tux shirt'] },
@@ -352,7 +383,7 @@ const PETS = [
 
 const TABS = [
   ['identity', 'Identity'], ['class', 'Class'], ['powers', 'Powers'], ['body', 'Body'],
-  ['face', 'Face & hair'], ['outfit', 'Outfit'], ['gear', 'Gear'], ['pet', 'Companion'], ['review', 'Review'],
+  ['face', 'Face & hair'], ['outfit', 'Outfit'], ['gear', 'Gear'], ['pet', 'Companion'], ['adventure', 'Adventure'], ['review', 'Review'],
 ];
 
 const DEFAULT = {
@@ -362,6 +393,8 @@ const DEFAULT = {
   outfit: { headwear: 'VR Visor', top: 'T-shirt', outer: 'Leather jacket', bottoms: 'Jeans', shoes: 'High-tops', gloves: 'Haptic gloves', accessory: 'None' },
   topColor: 5, outerColor: 10, bottomColor: 5,
   pet: 'Robo Drone', petName: 'Max', weapons: ['Energy Blade', 'Blaster Pistol'], items: ['Healing Potion', 'Zemeckis Cube'], tab: 'identity',
+  profession: 'Explorer', gems: 100, bag: {}, questCD: {}, questLog: [], gusAt: 0, charm: null, title: null, advTab: 'quests',
+  counters: { quests: 0, bought: 0, sold: 0, ultra: 0 },
 };
 
 let S;
@@ -372,6 +405,11 @@ function load(seed) {
   S = Object.assign(structuredClone(DEFAULT), seed && Object.keys(seed).length ? seed : saved || {});
   S.outfit = Object.assign({}, DEFAULT.outfit, S.outfit);
   if (!GENDERS.some(x => x[0] === S.gender)) S.gender = 'female';
+  if (typeof S.gems !== 'number' || (S.owner && isReserved(S.name) && S.gems < 10000 && !S.counters?.bought && !S.counters?.quests)) S.gems = (S.owner && isReserved(S.name)) ? 10000 : 100;
+  for (const k of ['bag', 'questCD']) if (!S[k] || typeof S[k] !== 'object') S[k] = {};
+  if (!Array.isArray(S.questLog)) S.questLog = [];
+  S.counters = Object.assign({ quests: 0, bought: 0, sold: 0, ultra: 0 }, S.counters);
+  for (const id of Object.keys(S.bag)) if (!ITEMS[id]) delete S.bag[id];
   if (S.name === 'Parzival') S.name = '';
   S.age = clamp(S.age, 10, 300);
   // Drop anything left over from an older save that no longer exists.
@@ -844,6 +882,12 @@ function buildAvatar() {
       hand.add(w);
     };
     place(hands[0], main);
+    if (S.charm && ITEMS[S.charm]) {
+      const ccol = ['#59e3ff', '#7c8a99', '#ffc94a', '#bfe9ff', '#e9e6ff', '#3ecf8e', '#c0392b', '#dfe7ff', '#a77bff', '#f4f4f6', '#ff7a2f', '#3a8bff'][+S.charm.slice(1) - 1] || accent;
+      add(hands[0], cyl(0.002, 0.002, 0.06), std('#d4d9e3'), [0, -0.05, 0.035]);
+      const ch = add(hands[0], new T.OctahedronGeometry(0.018), glow(ccol), [0, -0.085, 0.035]);
+      R3.anim.push(t => { ch.rotation.y = t / 600; });
+    }
     if (main === 'Twin Daggers') place(hands[1], main);
   }
 
@@ -975,6 +1019,215 @@ function loop(t) {
 let raf;
 function avatarImage() { return R3 ? R3.renderer.domElement.toDataURL('image/png') : ''; }
 
+// ======================= ITEMS, SHOPS, QUESTS =======================
+const RARITY = {
+  C: { name: 'Common', cls: 'r-c', value: 15 }, U: { name: 'Uncommon', cls: 'r-u', value: 60 }, R: { name: 'Rare', cls: 'r-r', value: 200 },
+  V: { name: 'Very Rare', cls: 'r-v', value: 600 }, X: { name: 'Ultra-Rare', cls: 'r-x', value: 2000 },
+};
+const RARITY_ORDER = ['C', 'U', 'R', 'V', 'X'];
+const SETS = {
+  mys: { name: 'Mysterious Objects', glyph: '✧' }, dream: { name: 'Dreamcore Items', glyph: '☾' }, charm: { name: 'Weapon Charms', glyph: '❖' },
+  store: { name: 'General Store', glyph: '▣' }, title: { name: 'Legendary Titles', glyph: '♛' },
+};
+const ITEMS = {};
+const addItems = (set, prefix, rows) => rows.forEach((row, i) => {
+  const [name, desc, r, price] = row.split('|');
+  const id = prefix + (i + 1);
+  ITEMS[id] = { id, set, name, desc, rarity: r, price: price ? +price : null };
+});
+
+addItems('mys', 'm', [
+  'Mirror of No Reflection|A silver hand mirror with no reflection|R', 'Unknown Statuette|A statuette of an unknown humanoid|U', 'Draconic Dictionary|A Common–Draconic dictionary|U',
+  'Egg Stone|A stone shaped like a fist-sized egg|C', 'Acorn Plank|A wooden plank with an acorn on the corner|C', 'Unopenable Letter|A magical letter opener and an unopenable letter|R',
+  'Monster Plushie|A stuffed animal in the shape of a random monster|C', 'Watching Portrait|A painted portrait whose eyes always follow you|R', 'Wrong-Way Compass|A compass that doesn’t point in a cardinal direction|U',
+  'Tooth Bracelet|A bracelet with beads made of teeth|U', 'Unsharpenable Sword|A dull sword that can’t be sharpened|C', 'Key-Seeing Crystal|A reflecting crystal that shows a key|X',
+  'Invisible Ink|A bottle of invisible ink|C', 'Map to Nowhere|A roughly drawn map leading nowhere|C', 'Portal Pendant|A necklace pendant showing a spinning portal|V',
+  'Automaton Carving|A wooden carving of an automaton|U', 'Forearm Stone Key|A stone key the size of a forearm|R', 'Opaque Glasses|A pair of glasses that are completely opaque|C',
+  'Bag of Glass Orbs|A bag of spherical marbles or glass orbs|C', 'Impossible Knot|A short ribbon tied in an impossible knot|U', 'Bottomless Flask|A full flask that can’t be emptied|V',
+  'Mysterious Portrait|A detailed drawing of one of the characters|U', 'Faction Coral|A piece of coral in the shape of a faction symbol|U', 'Sea Beast Scale|A massive iridescent scale of an unknown sea beast|R',
+  'Shapeshifting Stamp|An ink stamp that changes shape after every use|U', 'Silent Instrument|A musical instrument that makes no sound|C', 'Stone Sack|An empty bag or sack hewn from stone|C',
+  'Phantom Bank Letter|A letter of credit for a non-existing bank|C', 'Undecaying Remains|The remains of an animal that don’t decompose|U', 'Seedless Seeds|Seeds for plants that don’t grow seeds|C',
+  'Arcane Skull|A humanoid skull covered in arcane symbols|R', 'Book of Crossed Names|A book with all personal names crossed out|R', 'Endless Stew Pot|A stew-filled cooking pot that never runs out|V',
+  'Wrong Star Map|A star map that never matches the night sky|R', 'Demiplane Trapdoor|A detached trapdoor leading to an empty demiplane|V', 'Backwards Lockpicks|A set of lockpicks that only lock open doors|U',
+  'Warm Ice|A chunk of ice that is warm to the touch|U', 'Miscounting Abacus|An automatic abacus that always miscalculates|C', 'Jar of Purple Wind|A gust of purple wind contained in a jar|R',
+  'Dark Crystal Ball|A crystal ball that only shows very dark rooms|R', 'Same-Roll Bones|A set of casting bones that always roll the same|U', 'Handwriting Quill|A quill that changes the user’s handwriting|U',
+  'Blank Signet Ring|A wax seal or signet ring with no imprint|U', 'Coat of Empty Pockets|A long coat with infinite empty pockets|V', 'Uncrossable Fence|A loose piece of fence that can’t be crossed|R',
+  'Vanishing Bag|A bag in which all stored objects disappear|V', 'Stinky Soap|A bar of soap that makes the user smell bad|C', 'Impossible Fruit|A piece of fruit found where it can’t be grown|U',
+  'Fickle Hourglass|An hourglass that never measures the same time|R', 'Burning Feather|A long, colorful feather that burns when touched|U', 'Treacherous Dagger|A poisoned dagger that poisons the holder|R',
+  'Prison Diamond|A diamond that teleports to the nearest prison|X', 'Self-Playing Ball|A leather ball that plays ball games by itself|U', 'Unbendable Wire|A length of extremely thin, unbendable wire|U',
+  'Underwater Matches|A box of matches that only ignite underwater|U', 'Whispering Shell|A large, empty snail shell that whispers ominously|R', 'One-Use Plates|A set of cracked plates that break after one use|C',
+  'Cat-Calling Yarn|A yarn ball that teleports the nearest cat to you|V', 'Garbage Crown|A golden, bejeweled crown made from garbage|X', 'Obviously Fake Money|An enormous amount of obviously fake money|C',
+]);
+
+addItems('dream', 'd', [
+  'Somnolent Blade|A sword that makes foes yawn mid-swing|R', 'Pillow Edge|A soft blade that still somehow cuts|U', 'Lantern of Lost Dreams|Lights the way to dreams you forgot|V',
+  'Mirror of Echoes|Shows what you did a minute ago|R', 'Teddy’s Gaze|A purple bear that watches over you|U', 'Dreamcore Lance|A spear of solid starlight|V',
+  'Melting Clock|Time drips slowly near it|R', 'Staircase Key|Opens stairs that weren’t there before|R', 'Dream Dagger|Strikes from inside a dream|R',
+  'Nightmare Scythe|Harvests nightmares and fears|X', 'Floating Candles|Candles that hover and follow you|U', 'Whispering Book|Tells secrets if you listen closely|R',
+  'Faded Polaroid|A photo of a place you’ve never been|U', 'Starry Compass|Points to the brightest star in any sky|R', 'Dreamcore Gun|Fires bubbles of sleep|V',
+  'Sheet Ghost Charm|A tiny friendly ghost companion|U', 'Bubble Wand|Blows bubbles that hold tiny dreams|C', 'Lullaby Bell|Its ring sends monsters to sleep|R',
+  'Cloud Hammer|Light as a cloud, hits like thunder|V', 'Drowsy Shield|Attackers get sleepy on contact|R', 'Sleeptime Potion|A deep, restful sleep in a bottle|U',
+  'Memory Shard|A crystal holding someone’s memory|R', 'Cotton Candy Ration|Sweet, fluffy and surprisingly filling|C', 'Moondrop Elixir|Glows like moonlight, restores mana|U',
+  'Dream Biscuits|Crunchy biscuits that taste like wishes|C', 'Night Parfait|Layers of midnight flavours|C', 'Starlight Dumpling|Warm and glowing from the inside|C',
+  'Cloud Macaron|Melts like a cloud on your tongue|C', 'Sleep Tea|Calms nerves before a big quest|C', 'Lucid Lollipop|Lets you control your dreams|U',
+  'Bottle of Forgotten Melodies|Songs nobody remembers, still playing|V', 'Dream Lantern|A soft light that never goes out|U', 'Cracked Hourglass|Sand flows upward inside it|R',
+  'Third Eye Badge|See things that are hidden|V', 'Plush Backpack|A cuddly bag that holds more than it should|U', 'Ancient Coin|From a kingdom lost to dreams|U',
+  'Crumbling Crown|Once worn by the Dream King|V', 'Jigsaw Piece of Sky|A missing piece of the sky itself|V', 'Secret Diary|Writes back when you write in it|R',
+  'Dreamcatcher of Yesterdays|Catches and replays yesterday’s dreams|X', 'Foggy Music Box|Plays a tune from your childhood|R', 'Glitched Cube|Flickers in and out of reality|V',
+  'Reverse Feather|Falls upward when dropped|U', 'Doll’s Heart|Still beating, softly|R', 'Dreamcore Ticket|Admits one to the Dream Carnival|U',
+  'Infinite Stair Key|Unlocks a staircase that never ends|X', 'Paper Airplane|Always flies back to you|C', 'Moth in a Jar|A glowing moth that guides lost travellers|U',
+  'Sleepwalking Shoes|Walk while you sleep, safely|R', 'Door to Nowhere|A door that opens onto nothing at all|X',
+]);
+
+addItems('charm', 'c', [
+  'Stormthread Charm|Hits deal +1 lightning damage once per turn; a natural 1 zaps you instead|U',
+  'Gravebind Charm|Defeating a foe grants temporary HP, but slows you|R',
+  'Sunflare Charm|Your weapon glows with bright light; +1 radiant damage, more vs sun-sensitive foes|U',
+  'Frostbite Charm|Hits slow the target by 10 ft; already-slowed foes take +1d4 cold|U',
+  'Echo Charm|After a hit, a faint echo may strike again for 1d4 force|R',
+  'Verdant Grip Charm|Spectral vines can restrain the creature you hit|U',
+  'Bloodmoon Charm|Below half HP your weapon deals +1d6 necrotic, at a cost|V',
+  'Gale Step Charm|After an attack, move 5 ft without provoking attacks|U',
+  'Shatterpoint Charm|Max damage rolls add another die of damage|V',
+  'Phantom Veil Charm|After a hit, turn invisible until your next turn (once per rest)|V',
+  'Cinder Ash Charm|Hits add +1 fire damage and can ignite flammable things|U',
+  'Tidecall Charm|Hits can push a creature 5 ft; if it can’t move, +1d4 bludgeoning|U',
+]);
+
+// General Store: price in gp/sp/cp converted to gems (1 gp = 10, 1 sp = 1, cp rounds up to 1)
+const STORE = {
+  'Provisions & Drink': ['Rations (1 day)|5sp', 'Flask of Wine|2sp', 'Keg of Ale|2gp', 'Antidote|50gp', 'Waterskin|2sp'],
+  'Light & Fire': ['Torch|1cp', 'Candle|1cp', 'Lamp|5sp', 'Lantern (hooded)|5gp', 'Lantern (bullseye)|10gp', 'Oil (flask)|1sp', 'Censer Burner|10gp', 'Tinderbox|5sp'],
+  'Rope, Chain & Hardware': ['Chain (10 ft)|5gp', 'Rope (50 ft)|1gp', 'Block & Tackle|1gp', 'Iron Spikes (10)|1gp', 'Piton|5cp', 'Pole (10 ft)|5cp', 'Crowbar|2gp', 'Lock|10gp'],
+  'Tools & Exploration': ['Chalk|1cp', 'Magnifying Glass|100gp', 'Steel Mirror|5gp', 'Hourglass|25gp', 'Signal Whistle|5cp', 'Bell|1gp', 'Horn|3gp'],
+  'Containers': ['Jug|2cp', 'Sack|1cp', 'Barrel|2gp', 'Crate|5gp', 'Satchel|2gp', 'Pouch|5sp', 'Pack|5sp', 'Chest|5gp'],
+  'Tools': ['Alchemist’s Supplies|50gp', 'Brewer’s Supplies|20gp', 'Carpenter’s Tools|8gp', 'Cartographer’s Tools|15gp', 'Cobbler’s Tools|5gp', 'Glass Blower’s Tools|30gp', 'Herbalism Kit|5gp', 'Jeweler’s Tools|25gp', 'Leatherworker’s Tools|5gp', 'Mason’s Tools|10gp', 'Painter’s Supplies|10gp', 'Potter’s Tools|10gp', 'Smith’s Tools|20gp', 'Tinker’s Tools|50gp', 'Weaver’s Tools|1gp', 'Woodcarver’s Tools|1gp'],
+  'Adventuring Packs': ['Diplomat’s Pack|39gp', 'Dungeoneer’s Pack|12gp', 'Explorer’s Pack|10gp', 'Monster Hunter’s Pack|25gp', 'Scholar’s Pack|40gp'],
+  'Kits & Supplies': ['Cook’s Utensils|1gp', 'Mess Kit|2sp', 'Climbing Kit|25gp', 'Healer’s Kit|5gp'],
+  'Adventuring Gear': ['Bedroll|1gp', 'Tent (2-Man)|2gp', 'Tent (4-Man)|6gp', 'Map|10gp', 'Map Case|1gp', 'Winter Blanket|5sp'],
+  'Miscellaneous': ['Flask|2cp', 'Tankard|2cp', 'Glass Bottle|2gp', 'Scales|5gp', 'Ink|10gp', 'Ink Pen|2cp', 'Parchment (sheet)|1sp', 'Sealing Wax|5sp', 'Perfume (small vial)|5gp', 'String (10 ft)|1cp', 'Wire (10 ft)|1gp'],
+  'Games & Amusements': ['Dice|1sp', 'Dragonchess Set|1gp', 'Playing Card Set|5sp', 'Costume Clothes|5gp'],
+  'Musical Instruments': ['Drum|6gp', 'Lyre|30gp', 'Lute|35gp', 'Dulcimer|25gp', 'Flute|2gp', 'Pan Flute|12gp', 'Shawm|2gp', 'Harmonica|15gp', 'Violin|50gp'],
+  'Hunting & Field Gear': ['Net|1gp', 'Quiver|1gp', 'Animal Feed (per day)|5cp', 'Hunting Trap|5gp'],
+  'Wardrobe': ['Clothing (common)|5sp', 'Clothing (fine)|15gp', 'Belt|1gp', 'Boots|1gp', 'Shoes|1gp', 'Cape|1gp', 'Gloves|1gp', 'Hat|1gp', 'Hood|1gp', 'Robes|1gp'],
+};
+const toGems = p => { const n = parseFloat(p); return p.endsWith('gp') ? n * 10 : p.endsWith('sp') ? n : Math.max(1, Math.ceil(n / 10)); };
+let storeN = 0;
+for (const [cat, rows] of Object.entries(STORE)) for (const row of rows) {
+  const [name, price] = row.split('|'), gemsCost = toGems(price), id = 's' + (++storeN);
+  ITEMS[id] = { id, set: 'store', name, desc: `${cat} · ${price}`, cat, rarity: gemsCost >= 1000 ? 'R' : gemsCost >= 250 ? 'U' : 'C', price: gemsCost };
+}
+
+addItems('title', 't', [
+  'God Slayer|Legendary title|X', 'Heir of the Void|Legendary title|X', 'King of Beasts|Legendary title|X', 'Bearer of the Primordial Flame|Legendary title|X',
+  'Architect of Reality|Legendary title|X', 'Child of Dragons|Legendary title|X', 'Sovereign of Storms|Legendary title|X', 'Lord of Eternal Flesh|Legendary title|X',
+  'Emperor of the Dead|Legendary title|X', 'Star Walker|Legendary title|X', 'Guardian of the World’s End|Legendary title|X',
+]);
+
+const PROFESSIONS = {
+  'Artisans': ['Blacksmith', 'Armorer', 'Alchemist', 'Jeweler', 'Carpenter', 'Sculptor', 'Tailor', 'Enchanter'],
+  'Nature': ['Herbalist', 'Druid', 'Giant Beekeeper', 'Arcane Gardener', 'Griffin Breeder', 'Dragon Tamer', 'Basilisk Shepherd', 'Pegasus Breeder'],
+  'Exploration': ['Cartographer', 'Explorer', 'Navigator', 'Merchant', 'Treasure Hunter', 'Archaeologist', 'Ruin Guide', 'Relic Hunter'],
+  'Academic': ['Historian', 'Runologist', 'Arcane Researcher', 'Imperial Librarian', 'Ancient Linguist', 'Monster Scholar'],
+  'Military': ['Royal Guard', 'Captain', 'General', 'Mercenary', 'Scout', 'Frontier Sentinel', 'Bounty Hunter'],
+  'Truly fantastical': ['Dragon-Scale Collector', 'Wyvern Herder', 'Leviathan Fisher', 'Kraken Tamer', 'Thunder-Bee Keeper', 'Basilisk Venom Extractor', 'Giant Mushroom Farmer', 'Celestial Wolf Breeder', 'Monster-Bone Smith', 'Sky Navigator', 'Magic Crystal Miner', 'Phoenix-Tear Collector', 'Spirit Hunter', 'Griffin Messenger', 'Portal Guardian'],
+};
+
+const itemsBy = (set, rarities) => Object.values(ITEMS).filter(it => it.set === set && (!rarities || rarities.includes(it.rarity)));
+const priceOf = it => it.price != null ? it.price : RARITY[it.rarity].value;
+const sellValue = it => it.set === 'title' ? 0 : Math.max(1, Math.floor(priceOf(it) / 2));
+
+const QUESTS = [
+  { id: 'q1', name: 'Rats in the Cellar', d: 'Clear giant rats out of the inn’s cellar.', stat: 'STR', diff: 5, tier: 1, gems: 25, cd: 20, pools: ['store', 'mys'] },
+  { id: 'q2', name: 'The Lost Caravan', d: 'Track down a merchant caravan that vanished in the dunes.', stat: 'AGI', diff: 6, tier: 1, gems: 35, cd: 30, pools: ['store', 'mys'] },
+  { id: 'q3', name: 'Whispers in the Library', d: 'Find out which book keeps whispering after midnight.', stat: 'INT', diff: 7, tier: 2, gems: 60, cd: 45, pools: ['mys', 'dream'] },
+  { id: 'q4', name: 'The Charm-smith’s Errand', d: 'Talk a stubborn storm spirit into lending Mira some lightning.', stat: 'CHA', diff: 7, tier: 2, gems: 50, cd: 45, pools: ['charm', 'mys'] },
+  { id: 'q5', name: 'Thunder-Bee Swarm', d: 'Survive the stings and bring back thunder-honey.', stat: 'VIT', diff: 8, tier: 2, gems: 70, cd: 60, pools: ['store', 'charm', 'dream'] },
+  { id: 'q6', name: 'The Dreaming Tower', d: 'Climb a tower that only exists while someone is asleep.', stat: 'INT', diff: 9, tier: 3, gems: 120, cd: 90, pools: ['dream'] },
+  { id: 'q7', name: 'The Door to Nowhere', d: 'Step through a door that opens onto nothing at all.', stat: 'AGI', diff: 10, tier: 3, gems: 160, cd: 120, pools: ['dream', 'mys', 'charm'] },
+  { id: 'q8', name: 'Trial of Legends', d: 'Face the ancient champions. Only legends return with a title.', stat: 'STR', diff: 12, tier: 4, gems: 300, cd: 300, pools: ['title', 'dream', 'charm'] },
+];
+const TIER_WEIGHTS = { 1: { C: 60, U: 30, R: 9, V: 1, X: 0 }, 2: { C: 35, U: 35, R: 22, V: 7, X: 1 }, 3: { C: 10, U: 30, R: 35, V: 20, X: 5 }, 4: { C: 0, U: 15, R: 35, V: 35, X: 15 } };
+function rollRarity(weights) {
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (const k of RARITY_ORDER) { r -= weights[k]; if (r < 0) return k; }
+  return 'C';
+}
+function rollItem(pools, weights) {
+  const want = rollRarity(weights);
+  const order = [want, ...RARITY_ORDER.slice(0, RARITY_ORDER.indexOf(want)).reverse(), ...RARITY_ORDER.slice(RARITY_ORDER.indexOf(want) + 1)];
+  for (const r of order) {
+    const cands = pools.flatMap(p => itemsBy(p, [r]));
+    if (cands.length) return cands[Math.floor(Math.random() * cands.length)];
+  }
+  return null;
+}
+const questChance = q => clamp(0.45 + (stats()[q.stat] - q.diff) * 0.08, 0.1, 0.95);
+
+function giveItem(id, n = 1) {
+  S.bag[id] = (S.bag[id] || 0) + n;
+  if (ITEMS[id].rarity === 'X') S.counters.ultra++;
+}
+function takeItem(id) {
+  if (!S.bag[id]) return false;
+  if (--S.bag[id] <= 0) delete S.bag[id];
+  if (S.charm === id && !S.bag[id]) S.charm = null;
+  if (S.title === id && !S.bag[id]) S.title = null;
+  return true;
+}
+function buy(id) {
+  const it = ITEMS[id], cost = priceOf(it);
+  if (S.gems < cost) { toast(`You need ${(cost - S.gems).toLocaleString()} more gems.`); return; }
+  S.gems -= cost; giveItem(id); S.counters.bought++;
+  let extra = '';
+  if (it.name === 'Keg of Ale') { const tank = Object.values(ITEMS).find(x => x.name === 'Tankard'); giveItem(tank.id); extra = ' + a free Tankard'; }
+  save(); updateRig(); renderPane();
+  toast(`Bought ${it.name}${extra}`);
+}
+function sell(id) {
+  const it = ITEMS[id], v = sellValue(it);
+  if (!v || !takeItem(id)) return;
+  S.gems += v; S.counters.sold++;
+  save(); updateRig(); renderBagDialog(); if (S.tab === 'adventure') renderPane();
+  toast(`Old Gus paid ${v} gems for the ${it.name}`);
+}
+const running = {};
+function runQuest(q) {
+  const now = Date.now();
+  if ((S.questCD[q.id] || 0) > now || running[q.id]) return;
+  running[q.id] = true; renderPane();
+  setTimeout(() => {
+    running[q.id] = false;
+    const ok = Math.random() < questChance(q);
+    const entry = { q: q.name, ok, gems: 0, item: null, t: Date.now() };
+    if (ok) {
+      entry.gems = q.gems; S.gems += q.gems; S.counters.quests++;
+      const it = rollItem(q.pools, TIER_WEIGHTS[q.tier]);
+      if (it) { giveItem(it.id); entry.item = it.id; }
+      toast(it ? `Quest complete! +${q.gems} gems and ${RARITY[it.rarity].name}: ${it.name}` : `Quest complete! +${q.gems} gems`);
+    } else toast(`${q.name} failed. Train your ${q.stat} and try again.`);
+    S.questCD[q.id] = Date.now() + (ok ? q.cd : Math.ceil(q.cd / 2)) * 1000;
+    S.questLog.unshift(entry); S.questLog = S.questLog.slice(0, 12);
+    save(); updateRig(); if (S.tab === 'adventure') renderPane();
+  }, 1400);
+}
+const GUS_COOLDOWN = 3 * 60 * 1000;
+function gusGift() {
+  if (Date.now() < (S.gusAt || 0)) return;
+  const it = rollItem(['mys'], { C: 50, U: 35, R: 13, V: 2, X: 0 });
+  giveItem(it.id); S.gusAt = Date.now() + GUS_COOLDOWN;
+  save(); updateRig(); renderPane();
+  toast(`Old Gus hands you: ${it.name}`);
+}
+const fmtWait = ms => { const s = Math.ceil(ms / 1000); return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`; };
+function itemRow(it, actions) {
+  return h('div', { class: 'item-row ' + RARITY[it.rarity].cls },
+    h('span', { class: 'item-glyph', 'aria-hidden': 'true' }, SETS[it.set].glyph),
+    h('div', { class: 'item-text' }, h('b', {}, it.name), h('small', {}, `${RARITY[it.rarity].name} · ${it.desc}`)),
+    h('div', { class: 'item-actions' }, actions));
+}
+
 // ======================= UI =======================
 function chooser(items, current, onPick, { small = false, cols4 = false, disabled = () => false } = {}) {
   return h('div', { class: 'choices' + (small ? ' small' : '') + (cols4 ? ' cols4' : '') }, items.map(([val, title, desc]) =>
@@ -1018,6 +1271,9 @@ const PANES = {
       h('p', { class: 'lead' }, 'Your class sets your main stats. The subclass is your specialty inside it.'),
       field('Class', chooser(CLASSES.map(k => [k.id, k.name, k.d]), v => v === S.cls, v => { const nc = CLASSES.find(k => k.id === v); set({ cls: v, sub: nc.subs[0][0] }); }, { cols4: true })),
       field(`${c.name} subclass`, chooser(c.subs.map(([n, d]) => [n, n, d]), v => v === S.sub, v => set({ sub: v }))),
+      field('Profession', h('select', { id: 'profession', class: 'select', on: { change: e => set({ profession: e.target.value }, false) } },
+        Object.entries(PROFESSIONS).map(([grp, list]) => h('optgroup', { label: grp }, list.map(n => h('option', { value: n, selected: n === S.profession }, n)))))),
+      h('p', { class: 'note' }, 'Your profession is your trade between adventures.'),
     ];
   },
   powers() {
@@ -1089,6 +1345,13 @@ const PANES = {
         h('div', { class: 'label' }, h('span', {}, 'Weapons'), h('span', { class: 'counter' }, `${S.weapons.length} / 2`)),
         chooser(WEAPONS.map(([n, d, st]) => [n, n, `${d} · +1 ${st}`]), v => S.weapons.includes(v), toggle('weapons', 2), { small: true, disabled: v => wFull && !S.weapons.includes(v) })),
       S.weapons.length === 2 ? h('div', { class: 'top-actions' }, h('button', { class: 'btn', type: 'button', on: { click: () => set({ weapons: [S.weapons[1], S.weapons[0]] }) } }, `Hold ${S.weapons[1]} instead`)) : null,
+      (() => {
+        const owned = Object.keys(S.bag).filter(id => ITEMS[id].set === 'charm');
+        return h('div', { class: 'field' },
+          h('div', { class: 'label' }, h('span', {}, 'Weapon charm'), h('span', { class: 'hint' }, S.charm ? ITEMS[S.charm].name : 'none attached')),
+          owned.length ? chooser([['', 'No charm', 'Leave your weapon plain']].concat(owned.map(id => [id, ITEMS[id].name, `${RARITY[ITEMS[id].rarity].name} · ${ITEMS[id].desc}`])), v => (S.charm || '') === v, v => set({ charm: v || null }), { small: true })
+            : h('p', { class: 'note' }, 'No charms yet. Buy one from Mira on the Adventure tab, or find rarer ones on quests. A weapon can hold one charm at a time.'));
+      })(),
       h('div', { class: 'field' },
         h('div', { class: 'label' }, h('span', {}, 'Magical items'), h('span', { class: 'counter' }, `${S.items.length} / 3`)),
         chooser(MAGIC_ITEMS.map(([n, d]) => [n, n, d]), v => S.items.includes(v), toggle('items', 3), { small: true, disabled: v => iFull && !S.items.includes(v) })),
@@ -1102,6 +1365,65 @@ const PANES = {
       S.pet !== 'None' ? field('Companion name', h('input', { type: 'text', id: 'petName', maxlength: 16, value: S.petName, on: { input: e => set({ petName: e.target.value }, false) } })) : null,
     ];
   },
+  adventure() {
+    const now = Date.now(), sub = S.advTab || 'quests';
+    const subs = [['quests', 'Quest board'], ['store', 'General Store'], ['dream', 'Dream Peddler'], ['charms', 'Mira’s Charms'], ['gus', 'Old Gus']];
+    const owned = id => S.bag[id] ? h('span', { class: 'owned' }, `×${S.bag[id]}`) : null;
+    const buyBtn = it => h('button', { class: 'btn small', type: 'button', disabled: S.gems < priceOf(it), on: { click: () => buy(it.id) } }, `${priceOf(it).toLocaleString()} gems`);
+    const head = [
+      h('h2', {}, 'Adventure'),
+      h('p', { class: 'lead' }, `Spend gems in shops, win loot on quests, and visit NPCs. You have ${S.gems.toLocaleString()} gems.`),
+      h('div', { class: 'subtabs', role: 'tablist' }, subs.map(([id, label]) => h('button', { class: 'subtab', type: 'button', role: 'tab', 'aria-selected': String(sub === id), on: { click: () => { S.advTab = id; save(); renderPane(); } } }, label))),
+    ];
+    let body = [];
+    if (sub === 'quests') {
+      body = [
+        h('div', { class: 'quests' }, QUESTS.map(q => {
+          const until = S.questCD[q.id] || 0, busy = running[q.id];
+          const pct = Math.round(questChance(q) * 100);
+          const lo = RARITY[Object.entries(TIER_WEIGHTS[q.tier]).find(([, w]) => w > 0)[0]].name;
+          const hi = RARITY[Object.entries(TIER_WEIGHTS[q.tier]).filter(([, w]) => w > 0).pop()[0]].name;
+          return h('div', { class: 'quest' },
+            h('div', {}, h('b', {}, q.name), h('small', {}, q.d)),
+            h('div', { class: 'quest-meta' }, h('span', {}, `${q.stat} check · ${pct}%`), h('span', {}, `+${q.gems} gems`), h('span', {}, `${lo}–${hi} loot`)),
+            h('button', { class: 'btn primary small', type: 'button', 'data-until': until, disabled: busy || until > now, on: { click: () => runQuest(q) } }, busy ? 'On quest…' : until > now ? `Rest ${fmtWait(until - now)}` : 'Go'));
+        })),
+        h('div', { class: 'field' }, h('div', { class: 'label' }, h('span', {}, 'Quest log')),
+          S.questLog.length ? h('ul', { class: 'qlog' }, S.questLog.map(e => h('li', { class: e.ok ? 'ok' : 'fail' },
+            `${e.ok ? '✓' : '✗'} ${e.q}`, e.ok ? ` · +${e.gems} gems` : ' · failed', e.item ? h('span', { class: RARITY[ITEMS[e.item].rarity].cls + ' loot' }, ` · ${ITEMS[e.item].name}`) : null)))
+            : h('p', { class: 'note' }, 'No quests yet. Pick one with a good chance and press Go.')),
+      ];
+    } else if (sub === 'store') {
+      body = [
+        h('blockquote', { class: 'npc' }, '“If you can carry it, I’ve got it. If you can’t, I’ll help you figure it out.”', h('cite', {}, 'The Wanderer, General Store')),
+        h('p', { class: 'note' }, 'Today’s special: a free Tankard with every Keg of Ale.'),
+        ...Object.keys(STORE).map(cat => h('div', { class: 'field' }, h('div', { class: 'label' }, h('span', {}, cat)),
+          h('div', { class: 'items' }, itemsBy('store').filter(it => it.cat === cat).map(it => itemRow(it, [owned(it.id), buyBtn(it)]))))),
+      ];
+    } else if (sub === 'dream') {
+      body = [
+        h('blockquote', { class: 'npc' }, '“Everything here was found in someone’s dream. Mind the edges, they’re soft.”', h('cite', {}, 'The Dream Peddler')),
+        h('p', { class: 'note' }, 'Very Rare and Ultra-Rare dreamcore items only turn up on quests like The Dreaming Tower.'),
+        h('div', { class: 'items' }, itemsBy('dream', ['C', 'U', 'R']).map(it => itemRow(it, [owned(it.id), buyBtn(it)]))),
+      ];
+    } else if (sub === 'charms') {
+      body = [
+        h('blockquote', { class: 'npc' }, '“One charm per weapon, no exceptions. Two charms argue, and nobody wants that.”', h('cite', {}, 'Mira the Charm-smith')),
+        h('p', { class: 'note' }, 'Mira sells Uncommon charms. Rare and Very Rare charms come from quests. Attach one on the Gear tab.'),
+        h('div', { class: 'items' }, itemsBy('charm', ['U']).map(it => itemRow(it, [owned(it.id), buyBtn(it)]))),
+      ];
+    } else {
+      const wait = (S.gusAt || 0) - now;
+      body = [
+        h('blockquote', { class: 'npc' }, '“Odd things find their way to me. Take one, it’s been staring at me all week.”', h('cite', {}, 'Old Gus the Collector')),
+        h('div', { class: 'owner-row' },
+          h('button', { class: 'btn primary', type: 'button', 'data-until': S.gusAt || 0, disabled: wait > 0, on: { click: gusGift } }, wait > 0 ? `Come back in ${fmtWait(wait)}` : 'Accept a gift'),
+          h('button', { class: 'btn', type: 'button', on: { click: openBagDialog } }, 'Sell items to Gus')),
+        h('p', { class: 'note' }, 'Gus gives away a free Mysterious Object every 3 minutes and buys anything (except titles) for half its value.'),
+      ];
+    }
+    return head.concat(body);
+  },
   review() {
     const st = stats(), img = h('img', { src: avatarImage(), alt: 'Your avatar' });
     const o = outfitNow();
@@ -1110,7 +1432,7 @@ const PANES = {
       ['Gender', GENDERS.find(x => x[0] === S.gender)[1]], ['Race', race().name], ['Class', `${cls().name} · ${S.sub}`], ['Powers', (S.powers.join(' + ') || 'None chosen') + (isOwner() ? ' · Legendary: ' + LEGENDARY.map(p => p[0]).join(', ') : '')],
       ['Speed', `${S.speed}/10 · ${speedMs()} m/s`], ['Age', ageLabel()], ['Height', heightLabel(S.height)], ['Weight', weightLabel(S.weight)],
       ['Skin', SKIN_NAMES[S.skin]], ['Eyes', `${EYE_NAMES[S.eyeColor]}, ${S.eyeShape.toLowerCase()}`], ['Hair', `${HAIR_NAMES[S.hairColor]} ${S.hairStyle.toLowerCase()}`],
-      ['Wearing', wear], ['Weapons', S.weapons.join(', ') || 'Unarmed'], ['Magic items', S.items.join(', ') || 'None'], ['Companion', S.pet === 'None' ? 'None' : `${S.petName || 'Unnamed'} the ${S.pet}`],
+      ['Profession', S.profession], ['Title', S.title ? ITEMS[S.title].name : 'None yet'], ['Wearing', wear], ['Charm', S.charm ? ITEMS[S.charm].name : 'None'], ['Weapons', S.weapons.join(', ') || 'Unarmed'], ['Magic items', S.items.join(', ') || 'None'], ['Companion', S.pet === 'None' ? 'None' : `${S.petName || 'Unnamed'} the ${S.pet}`],
       ['Stats', Object.entries(st).map(([k, v]) => `${k} ${v}`).join(' · ')],
     ];
     const sheet = `OASIS AVATAR · ID ${oasisId()}\nGamer name: ${S.name}\n` + rows.map(([k, v]) => `${k}: ${v}`).join('\n') + `\nLevel 1 · ${gems().toLocaleString()} Gems · Book of Lore · Keys: none yet`;
@@ -1144,7 +1466,7 @@ async function unlockOwner(code) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(code.trim().toLowerCase()));
     hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (e) { toast('This browser cannot check the code.'); return; }
-  if (hex === OWNER_CODE_SHA256) { S.owner = true; S.name = RESERVED_NAME; S.outfit = Object.assign({}, EXCLUSIVE); save(); updateRig(); buildAvatar(); renderPane(); toast('Welcome, Orla: legendary powers, your outfit and 10,000 gems unlocked'); }
+  if (hex === OWNER_CODE_SHA256) { S.owner = true; S.name = RESERVED_NAME; S.outfit = Object.assign({}, EXCLUSIVE); S.gems = Math.max(S.gems, 10000); save(); updateRig(); buildAvatar(); renderPane(); toast('Welcome, Orla: legendary powers, your outfit and 10,000 gems unlocked'); }
   else toast('That code is not right.');
 }
 const ageLabel = () => `${S.age} yrs`;
@@ -1168,7 +1490,7 @@ function updateRig() {
   $('rig-name').textContent = nameOk() ? S.name : 'Enter gamer name';
   $('rig-name').style.color = nameOk() ? '' : 'var(--muted)';
   $('rig-id').textContent = `ID ${oasisId()}`;
-  $('rig-sub').textContent = `${race().name} ${cls().name} · ${S.sub} · ${S.age} yrs`;
+  $('rig-sub').textContent = `${S.title ? ITEMS[S.title].name + ' · ' : ''}${race().name} ${cls().name} · ${S.sub} · ${S.profession} · ${S.age} yrs`;
   $('rig-chips').replaceChildren(...(isOwner() ? LEGENDARY.map(p => h('span', { class: 'chip legend' }, p[0])) : []),
     ...S.powers.map(p => h('span', { class: 'chip power' }, p)),
     ...S.weapons.map(w => h('span', { class: 'chip' }, w)),
@@ -1198,6 +1520,13 @@ function achievements() {
     ['Speed Demon', 'Max out your speed', S.speed === 10],
     ['Gem Hoarder', 'Hold 10,000 gems', gems() >= 10000],
     ['Legend', 'Own the legendary powers', isOwner()],
+    ['First Purchase', 'Buy something from a shop', S.counters.bought > 0],
+    ['Quest Complete', 'Finish your first quest', S.counters.quests > 0],
+    ['Veteran', 'Finish 10 quests', S.counters.quests >= 10],
+    ['Charmed', 'Attach a charm to your weapon', !!S.charm],
+    ['Lucky Find', 'Find an Ultra-Rare item', S.counters.ultra > 0],
+    ['Curator', 'Own 25 different items', Object.keys(S.bag).length >= 25],
+    ['Legendary Title', 'Earn a title in the Trial of Legends', Object.keys(S.bag).some(id => ITEMS[id].set === 'title')],
     ['Egg Hunter', 'Find the copper, jade and crystal keys', false],
   ];
 }
@@ -1209,7 +1538,32 @@ function renderBag() {
     h('div', { class: 'bag-title' }, nameOk() ? `${S.name}'s bag` : 'Your bag'),
     h('div', { class: 'bag-items' },
       h('div', { class: 'bag-item' }, h('span', { class: 'gem', 'aria-hidden': 'true' }), h('span', {}, h('b', {}, gems().toLocaleString()), ' Gems')),
+      h('button', { class: 'bag-item book', type: 'button', on: { click: openBagDialog } }, h('span', { class: 'bag-ico', 'aria-hidden': 'true' }), h('span', {}, h('b', {}, String(Object.values(S.bag).reduce((a, b) => a + b, 0))), ' items')),
       h('button', { class: 'bag-item book', type: 'button', on: { click: openLore } }, h('span', { class: 'book-ico', 'aria-hidden': 'true' }), h('span', {}, h('b', {}, 'Book of Lore'), ' · open'))));
+}
+function openBagDialog() { renderBagDialog(); const d = $('bagdlg'); if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); } }
+function renderBagDialog() {
+  const d = $('bagdlg');
+  d.className = 'lore' + (isOwner() ? ' rainbow' : '');
+  const ids = Object.keys(S.bag).sort((a, b) => RARITY_ORDER.indexOf(ITEMS[b].rarity) - RARITY_ORDER.indexOf(ITEMS[a].rarity) || ITEMS[a].name.localeCompare(ITEMS[b].name));
+  const sections = Object.keys(SETS).map(set => {
+    const mine = ids.filter(id => ITEMS[id].set === set);
+    if (!mine.length) return null;
+    return h('div', { class: 'field' }, h('div', { class: 'label' }, h('span', {}, SETS[set].name)),
+      h('div', { class: 'items' }, mine.map(id => {
+        const it = ITEMS[id], acts = [h('span', { class: 'owned' }, `×${S.bag[id]}`)];
+        if (set === 'charm') acts.push(h('button', { class: 'btn small', type: 'button', disabled: S.charm === id, on: { click: () => { S.charm = id; save(); buildAvatar(); renderBagDialog(); toast(`${it.name} attached to your weapon`); } } }, S.charm === id ? 'Attached' : 'Attach'));
+        if (set === 'title') acts.push(h('button', { class: 'btn small', type: 'button', disabled: S.title === id, on: { click: () => { S.title = id; save(); updateRig(); renderBagDialog(); toast(`You are now ${S.name || 'the'} · ${it.name}`); } } }, S.title === id ? 'Wearing' : 'Wear title'));
+        if (sellValue(it)) acts.push(h('button', { class: 'btn small', type: 'button', on: { click: () => sell(id) } }, `Sell · ${sellValue(it)}`));
+        return itemRow(it, acts);
+      })));
+  }).filter(Boolean);
+  d.replaceChildren(
+    h('div', { class: 'lore-head' },
+      h('div', {}, h('div', { class: 'lore-kicker' }, 'Bag'), h('h2', {}, nameOk() ? `${S.name}'s bag` : 'Your bag'),
+        h('div', { class: 'lore-sub' }, `${S.gems.toLocaleString()} gems · ${ids.length} different items · Book of Lore`)),
+      h('button', { class: 'btn', type: 'button', on: { click: () => d.close() } }, 'Close')),
+    sections.length ? h('div', { class: 'bag-sections' }, sections) : h('p', { class: 'note' }, 'Your bag only holds gems and your Book of Lore so far. Go on a quest or visit a shop on the Adventure tab.'));
 }
 function openLore() {
   const d = $('lore'), st = stats(), ach = achievements(), got = ach.filter(a => a[2]).length;
@@ -1218,7 +1572,7 @@ function openLore() {
   d.replaceChildren(
     h('div', { class: 'lore-head' },
       h('div', {}, h('div', { class: 'lore-kicker' }, 'Book of Lore'), h('h2', { id: 'lore-title' }, nameOk() ? S.name : 'Unnamed adventurer'),
-        h('div', { class: 'lore-sub' }, `${race().name} ${cls().name} · ${S.sub} · Level 1 · ${gems().toLocaleString()} gems`)),
+        h('div', { class: 'lore-sub' }, `${S.title ? ITEMS[S.title].name + ' · ' : ''}${race().name} ${cls().name} · ${S.sub} · ${S.profession} · ${gems().toLocaleString()} gems · ${S.counters.quests} quests`)),
       h('button', { class: 'btn', type: 'button', on: { click: () => d.close() } }, 'Close')),
     h('div', { class: 'lore-pages' },
       h('section', {},
@@ -1232,6 +1586,12 @@ function openLore() {
         h('p', {}, S.powers.join(', ') || 'None yet', isOwner() ? h('span', { class: 'legend-tag' }, ' + ' + LEGENDARY.map(p => p[0]).join(', ')) : null),
         h('h3', {}, 'Carrying'),
         h('p', {}, [S.weapons.join(', '), S.items.join(', ')].filter(Boolean).join(' · ') || 'Nothing yet'),
+        h('h3', {}, 'Collections'),
+        h('div', { class: 'stats' }, Object.entries(SETS).flatMap(([set, info]) => {
+          const total = itemsBy(set).length, have = Object.keys(S.bag).filter(id => ITEMS[id].set === set).length;
+          return [h('span', { class: 'lbl' }, info.glyph), h('div', { class: 'bar', title: info.name }, h('i', { style: `width:${have / total * 100}%` })), h('span', { class: 'num' }, `${have}/${total}`)];
+        })),
+        h('p', { class: 'note' }, Object.values(SETS).map(x => `${x.glyph} ${x.name}`).join(' · ')),
         h('h3', {}, 'Keys'),
         h('div', { class: 'keys' }, h('span', {}, 'Copper'), h('span', {}, 'Jade'), h('span', {}, 'Crystal')))));
   if (d.showModal) d.showModal(); else d.setAttribute('open', '');
@@ -1269,7 +1629,17 @@ function copy(text) {
 function start(seed) {
   load(seed);
   $('randomize').addEventListener('click', randomize);
-  $('reset').addEventListener('click', () => { const owner = S.owner; S = structuredClone(DEFAULT); S.owner = owner; save(); buildAvatar(); updateRig(); renderPane(); toast('Started over'); });
+  $('reset').addEventListener('click', () => { const keep = {}; for (const k of ['owner', 'gems', 'bag', 'questCD', 'questLog', 'gusAt', 'charm', 'title', 'counters']) keep[k] = S[k]; S = Object.assign(structuredClone(DEFAULT), keep); save(); buildAvatar(); updateRig(); renderPane(); toast('Started over'); });
+  setInterval(() => {
+    if (S.tab !== 'adventure') return;
+    const now = Date.now();
+    document.querySelectorAll('#pane [data-until]').forEach(b => {
+      const until = +b.dataset.until;
+      if (!until) return;
+      if (until <= now) { b.dataset.until = 0; renderPane(); }
+      else b.textContent = (b.textContent.startsWith('Come') ? 'Come back in ' : 'Rest ') + fmtWait(until - now);
+    });
+  }, 1000);
   initThree(); buildAvatar();
   updateRig(); renderPane();
   cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
