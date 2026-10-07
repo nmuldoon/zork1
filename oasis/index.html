@@ -1,0 +1,783 @@
+<title>OASIS Avatar Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Chakra+Petch:wght@400;500;600;700&family=VT323&display=swap">
+<style>
+/* Layout: a sticky "rig" preview (live avatar + stats) beside a tabbed configuration console.
+   Single dark look by choice: you're inside the visor. */
+:root {
+  --void: #0f0c22;
+  --panel: #19153a;
+  --panel-2: #221d4a;
+  --line: #352e66;
+  --ink: #ece9ff;
+  --muted: #9d96cc;
+  --gold: #ffc94a;      /* the egg hunter's accent: copper/jade/crystal key gold */
+  --cyan: #59e3ff;
+  --danger: #ff6f91;
+  --ok: #7cf2a6;
+  --display: "Audiowide", "Arial Black", system-ui, sans-serif;
+  --body: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --data: "VT323", ui-monospace, "Courier New", monospace;
+  --r: 10px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: radial-gradient(1200px 600px at 70% -10%, #2a1f63 0%, transparent 60%), var(--void);
+  color: var(--ink); font: 16px/1.5 var(--body);
+  padding-inline: 16px; padding-block: 20px 40px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.brand h1 { font: 400 clamp(26px, 4vw, 40px)/1.05 var(--display); margin: 0; letter-spacing: .04em; text-wrap: balance; }
+.brand h1 span { color: var(--gold); }
+.brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 14px; font-weight: 600; letter-spacing: .02em;
+}
+.btn:hover { border-color: var(--cyan); }
+.btn.primary { background: var(--gold); color: #1d1500; border-color: var(--gold); }
+.btn.primary:hover { filter: brightness(1.08); }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+
+/* ---------- rig (preview) ---------- */
+.rig {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.rig-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rig-name { font: 400 22px/1.1 var(--display); margin: 0; overflow-wrap: anywhere; }
+.rig-id { font: 20px/1 var(--data); color: var(--cyan); white-space: nowrap; }
+.rig-sub { color: var(--muted); font-size: 14px; margin-top: -6px; }
+canvas#avatar { width: 100%; max-width: 100%; aspect-ratio: 48 / 72; image-rendering: pixelated; border-radius: 8px; background: #0a0819; display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.item { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
+.chip.power { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 50%, transparent); }
+.stats { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center; font: 20px/1 var(--data); }
+.stats .lbl { color: var(--muted); letter-spacing: .05em; }
+.bar { height: 8px; background: var(--void); border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--gold)); transition: width .25s; }
+.stats .num { font-variant-numeric: tabular-nums; text-align: right; min-width: 2ch; }
+.vitals { display: flex; gap: 16px; font: 20px/1 var(--data); color: var(--muted); }
+.vitals b { color: var(--ink); font-weight: 400; }
+
+/* ---------- console ---------- */
+.console { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--line); padding: 6px 6px 0; scrollbar-width: thin; }
+.tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 10px 12px; white-space: nowrap; color: var(--muted); font-weight: 600; font-size: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+.tab .n { font: 18px/1 var(--data); color: var(--line); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
+.tab[aria-selected="true"] .n { color: var(--gold); }
+.tab .done { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+.pane { padding: 20px; display: flex; flex-direction: column; gap: 22px; }
+.pane h2 { font: 400 20px/1.2 var(--display); margin: 0; letter-spacing: .03em; }
+.pane .lead { margin: -14px 0 0; color: var(--muted); font-size: 14px; max-width: 65ch; }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field > .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.field > .label output, .field > .label .hint { font: 20px/1 var(--data); letter-spacing: 0; text-transform: none; color: var(--cyan); }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+
+input[type="text"] {
+  background: var(--void); border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
+  font: 600 18px var(--body); padding: 10px 12px; width: 100%;
+}
+input[type="text"]:focus { border-color: var(--cyan); outline: none; }
+input[type="range"] { width: 100%; accent-color: var(--gold); }
+
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.choices.small { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+.opt {
+  text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.opt b { font-weight: 600; font-size: 15px; }
+.opt small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.opt:hover:not(:disabled) { border-color: var(--cyan); }
+.opt[aria-pressed="true"] { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, var(--panel-2)); }
+.opt[aria-pressed="true"] b { color: var(--gold); }
+.opt:disabled { opacity: .4; cursor: not-allowed; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); padding: 0; position: relative; }
+.sw[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 35%, transparent); }
+.sw:hover { border-color: var(--cyan); }
+
+.counter { font: 22px/1 var(--data); color: var(--gold); }
+.note { font-size: 13px; color: var(--muted); }
+.note.warn { color: var(--danger); }
+
+/* ---------- review / ID card ---------- */
+.idcard { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 18px; background: linear-gradient(135deg, var(--panel-2), var(--void)); border: 1px solid var(--gold); border-radius: 12px; padding: 18px; }
+.idcard img { width: 100%; max-width: 100%; image-rendering: pixelated; border-radius: 6px; background: #0a0819; }
+.idcard h3 { font: 400 24px/1.1 var(--display); margin: 0; overflow-wrap: anywhere; }
+.idcard .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin-top: 10px; font-size: 14px; }
+.idcard .kv dt { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; padding-top: 3px; }
+.idcard .kv dd { margin: 0; overflow-wrap: anywhere; }
+.keys { display: flex; gap: 12px; font: 20px/1 var(--data); color: var(--muted); margin-top: 10px; flex-wrap: wrap; }
+.keys span::before { content: "○ "; }
+.pane-nav { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 16px; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--gold); color: #1d1500; padding: 8px 16px; border-radius: 8px; font-weight: 700; }
+textarea#sheet { width: 100%; min-height: 160px; background: var(--void); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font: 18px/1.2 var(--data); padding: 10px; }
+.foot { color: var(--muted); font-size: 12px; text-align: center; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .rig { position: static; display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr); align-items: start; }
+  .rig > canvas { grid-row: span 5; }
+  .rig-head, .rig-sub, .chips, .stats, .vitals { grid-column: 2; }
+  .row2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .rig { grid-template-columns: minmax(0, 110px) minmax(0, 1fr); }
+  .idcard { grid-template-columns: 1fr; }
+  .idcard img { max-width: 160px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>OASIS <span>Avatar Forge</span></h1>
+      <p>Build the avatar you'll log in as. Fan-made, inspired by <i>Ready Player One</i>.</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="randomize" type="button">Randomize</button>
+      <button class="btn" id="reset" type="button">Start over</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="rig" aria-label="Avatar preview">
+      <canvas id="avatar" width="240" height="360" role="img" aria-label="Pixel-art preview of your avatar"></canvas>
+      <div class="rig-head">
+        <h2 class="rig-name" id="rig-name">Parzival</h2>
+        <span class="rig-id" id="rig-id">LVL 1</span>
+      </div>
+      <div class="rig-sub" id="rig-sub"></div>
+      <div class="chips" id="rig-chips"></div>
+      <div class="stats" id="rig-stats"></div>
+      <div class="vitals" id="rig-vitals"></div>
+    </aside>
+
+    <section class="console">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="pane" id="pane" role="tabpanel"></div>
+    </section>
+  </div>
+  <p class="foot">Unofficial fan project. Your avatar is saved in this browser only.</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+
+// ======================= DATA =======================
+const RACES = [
+  { id: 'human', name: 'Human', d: 'Balanced. Good at everything, great at adapting.', mod: { STR: 1, INT: 1, CHA: 1, VIT: 1 } },
+  { id: 'elf', name: 'Elf', d: 'Graceful and long-lived. Sharp eyes, pointed ears.', mod: { INT: 2, CHA: 2 } },
+  { id: 'dwarf', name: 'Dwarf', d: 'Short, stubborn, and very hard to knock over.', mod: { STR: 2, VIT: 3, CHA: -1 } },
+  { id: 'orc', name: 'Orc', d: 'Tusks, muscle, and a loud battle cry.', mod: { STR: 4, INT: -1, VIT: 1 } },
+  { id: 'halfling', name: 'Halfling', d: 'Small, lucky, and fond of second breakfast.', mod: { CHA: 2, VIT: 1 } },
+  { id: 'gnome', name: 'Gnome', d: 'Tiny tinkerers with big noses and bigger ideas.', mod: { INT: 4, STR: -1 } },
+  { id: 'dragonborn', name: 'Dragonborn', d: 'Horned and scaled, with dragon blood.', mod: { STR: 2, CHA: 1, VIT: 2 } },
+  { id: 'cyborg', name: 'Cyborg', d: 'Part human, part machine. Glowing implant eye.', mod: { STR: 1, INT: 2, VIT: 2, CHA: -1 } },
+  { id: 'android', name: 'Android', d: 'Fully synthetic. Panel lines and an antenna.', mod: { INT: 3, VIT: 2, CHA: -1 } },
+  { id: 'undead', name: 'Undead', d: 'Back from the respawn queue, a little stitched.', mod: { VIT: 4, CHA: -2, INT: 1 } },
+];
+const CLASSES = [
+  { id: 'warrior', name: 'Warrior', d: 'Front-line fighter.', color: '#ff6f61', mod: { STR: 3, VIT: 2 },
+    subs: [['Gladiator', 'Arena champion with sword and shield'], ['Paladin', 'Holy knight who protects allies'], ['Berserker', 'Gets stronger the more damage taken']] },
+  { id: 'mage', name: 'Mage', d: 'Spellcaster.', color: '#a77bff', mod: { INT: 4, CHA: 1 },
+    subs: [['Pyromancer', 'Master of fire spells'], ['Chronomancer', 'Bends and rewinds time'], ['Illusionist', 'Creates decoys and phantoms']] },
+  { id: 'rogue', name: 'Rogue', d: 'Stealth and tricks.', color: '#4fd1a5', mod: { STR: 1, CHA: 2, INT: 1 },
+    subs: [['Assassin', 'Strikes from the shadows'], ['Thief', 'Picks locks and pockets'], ['Gunslinger', 'Fastest blaster in the sector']] },
+  { id: 'ranger', name: 'Ranger', d: 'Wilderness expert.', color: '#8bd450', mod: { STR: 1, INT: 1, VIT: 2 },
+    subs: [['Beastmaster', 'Fights alongside their companion'], ['Sniper', 'Hits targets from a planet away'], ['Scout', 'Maps new worlds first']] },
+  { id: 'hacker', name: 'Hacker', d: 'Breaks the rules of the sim.', color: '#59e3ff', mod: { INT: 5 },
+    subs: [['Code Breaker', 'Cracks locked doors and safes'], ['Glitch Runner', 'Phases through walls using bugs'], ['Netrunner', 'Hijacks drones and turrets']] },
+  { id: 'cleric', name: 'Cleric', d: 'Healer and support.', color: '#ffe066', mod: { CHA: 2, VIT: 2, INT: 1 },
+    subs: [['Medic', 'Patches up the whole party'], ['Oracle', 'Sees glimpses of what comes next'], ['Druid', 'Draws power from nature']] },
+  { id: 'engineer', name: 'Engineer', d: 'Builds gear and vehicles.', color: '#ff9f43', mod: { INT: 3, STR: 1, VIT: 1 },
+    subs: [['Mech Pilot', 'Drives a giant battle robot'], ['Gadgeteer', 'Has a gadget for everything'], ['Demolitionist', 'Solves problems with explosives']] },
+  { id: 'bard', name: 'Bard', d: 'Performer who buffs allies.', color: '#ff7ad9', mod: { CHA: 5 },
+    subs: [['DJ', 'Drops beats that boost the team'], ['Rock Star', 'Guitar solos that stun enemies'], ['Arcade Champ', 'Never lost a classic cabinet game']] },
+];
+const POWERS = [
+  ['Teleport', 'Blink to any spot you can see'], ['Invisibility', 'Vanish for 10 seconds'], ['Flight', 'Soar above the battlefield'],
+  ['Super Strength', 'Lift cars, punch through walls'], ['Time Slow', 'Everything else moves at half speed'], ['Force Field', 'A bubble that blocks attacks'],
+  ['Shapeshift', 'Take the form of an animal'], ['Fireball', 'Throw blazing orbs'], ['Lightning', 'Chain-zap a group of enemies'],
+  ['Healing', 'Restore health to yourself or allies'], ['Mind Read', "Hear an NPC's thoughts"], ['Clone', 'Summon a copy of yourself'],
+  ['Gravity Control', 'Flip or crush with gravity'], ['Night Vision', 'See perfectly in the dark'], ['Wall Climb', 'Run up walls and ceilings'],
+  ['Extra Life', 'Respawn once without losing coins'],
+];
+const SKIN = ['#ffe0c7', '#f6cba5', '#eab388', '#d49a6a', '#b97d4f', '#9a6238', '#7a4a2a', '#5a3520', '#3e2416', '#2b1a10', '#7fc97f', '#7aaee8', '#c3a2ef', '#c9d1d9'];
+const SKIN_NAMES = ['Porcelain', 'Fair', 'Light', 'Warm beige', 'Tan', 'Honey', 'Bronze', 'Brown', 'Deep brown', 'Ebony', 'Goblin green', 'Frost blue', 'Lilac', 'Chrome'];
+const HAIR_STYLES = ['Bald', 'Buzz cut', 'Short', 'Spiky', 'Mohawk', 'Long', 'Ponytail', 'Afro', 'Top bun', 'Braids'];
+const HAIR_COLORS = ['#141010', '#3b2416', '#6b4423', '#a8723e', '#e4c27a', '#f3eee0', '#9a9a9a', '#b8352a', '#ff5fa2', '#4da3ff', '#56e39f', '#a77bff'];
+const HAIR_NAMES = ['Black', 'Dark brown', 'Brown', 'Auburn', 'Blonde', 'Platinum', 'Grey', 'Red', 'Neon pink', 'Electric blue', 'Toxic green', 'Violet'];
+const EYE_COLORS = ['#5a3a1e', '#8a5a2b', '#3d7fd1', '#5fb3ff', '#3f9a5a', '#8fbf4a', '#7c7c8a', '#c0392b', '#ffbf2f', '#b56cff'];
+const EYE_NAMES = ['Dark brown', 'Hazel', 'Blue', 'Ice blue', 'Green', 'Olive', 'Grey', 'Crimson', 'Gold', 'Violet'];
+const EYE_SHAPES = [['Round', 'Big and friendly'], ['Almond', 'Classic hero look'], ['Narrow', 'Focused squint'], ['Wide', 'Always surprised'], ['Cat', 'Slit pupils'], ['Visor', 'One glowing robotic band']];
+const OUTFIT = {
+  headwear: { label: 'Headwear', items: ['None', 'Cap', 'Beanie', 'Headphones', 'Crown', 'Helmet', 'VR Visor', 'Wizard Hat'] },
+  top: { label: 'Top', items: ['T-shirt', 'Hoodie', 'Tank top', 'Armor plate', 'Robe', 'Tux shirt'] },
+  outer: { label: 'Jacket / back', items: ['None', 'Leather jacket', 'Trench coat', 'Cape', 'Bomber', 'Lab coat'] },
+  bottoms: { label: 'Bottoms', items: ['Jeans', 'Cargo pants', 'Shorts', 'Skirt', 'Track pants', 'Armor greaves'] },
+  shoes: { label: 'Footwear', items: ['Sneakers', 'Boots', 'High-tops', 'Sandals', 'Rocket boots'] },
+  gloves: { label: 'Gloves', items: ['None', 'Fingerless', 'Gauntlets', 'Haptic gloves'] },
+  accessory: { label: 'Accessory', items: ['None', 'Sunglasses', 'Scarf', 'Gold chain', 'Backpack', 'Sword on back'] },
+};
+const CLOTH_COLORS = ['#e94b3c', '#ff9f43', '#ffd23f', '#3ecf8e', '#2bb3c0', '#3a6ff7', '#7b4dff', '#ff5fa2', '#f2f2f2', '#6b6b7a', '#2a2a35', '#8a5a3b'];
+const WEAPONS = [
+  ['Longsword', 'Classic steel blade', 'STR', 'melee'], ['Katana', 'Fast, razor-sharp strikes', 'AGI', 'melee'],
+  ['Battle Axe', 'Heavy two-handed chopper', 'STR', 'melee'], ['War Hammer', 'Crushes armor and walls', 'STR', 'melee'],
+  ['Twin Daggers', 'Quick stabs from the shadows', 'AGI', 'melee'], ['Energy Blade', 'Humming blade of pure light', 'AGI', 'melee'],
+  ['Longbow', 'Silent long-range shots', 'AGI', 'ranged'], ['Crossbow', 'Slow to load, hits hard', 'STR', 'ranged'],
+  ['Blaster Pistol', 'Reliable sidearm', 'AGI', 'ranged'], ['Plasma Rifle', 'Burns through shields', 'INT', 'ranged'],
+  ['Magic Staff', 'Focuses spells, doubles as a club', 'INT', 'magic'], ['Chain Whip', 'Grabs, trips and disarms', 'AGI', 'melee'],
+];
+const MAGIC_ITEMS = [
+  ['Healing Potion', 'Restores 50 HP in one gulp'], ['Mana Potion', 'Refills your mana bar'], ['Ring of Protection', 'Blocks the first hit in every fight'],
+  ['Amulet of Life', 'Revives you once at half health'], ['Spellbook', 'Holds three extra spells'], ['Bag of Holding', 'Carries a whole armory'],
+  ['Shadow Cloak', 'Muffles footsteps and hides you'], ['Feather Charm', 'Makes you fall slowly and safely'], ['Crystal Orb', 'Shows a far-off place'],
+  ['Zemeckis Cube', 'Rewinds time by 60 seconds'], ['Orb of Osuvox', 'Raises a shield nothing can break'], ['Magic Map', 'Reveals hidden doors and Easter eggs'],
+];
+const PETS = [
+  ['None', 'Solo adventurer'], ['Cat', 'Independent and sneaky'], ['Dog', 'Loyal to the end'], ['Mini Dragon', 'Breathes tiny flames'],
+  ['Robo Drone', 'Hovers and scans'], ['Owl', 'Wise night watcher'], ['Fox', 'Clever trickster'], ['Slime', 'Bouncy and squishy'],
+  ['Unicorn', 'Rare, sparkly, a bit vain'],
+];
+
+const TABS = [
+  ['identity', 'Identity'], ['class', 'Class'], ['powers', 'Powers'], ['body', 'Body'],
+  ['face', 'Face & hair'], ['outfit', 'Outfit'], ['gear', 'Gear'], ['pet', 'Companion'], ['review', 'Review'],
+];
+
+const DEFAULT = {
+  name: 'Parzival', age: 18, race: 'human', cls: 'hacker', sub: 'Glitch Runner',
+  powers: ['Teleport', 'Time Slow'], speed: 7, height: 175, weight: 68, skin: 3,
+  hairStyle: 'Spiky', hairColor: 1, eyeColor: 2, eyeShape: 'Almond',
+  outfit: { headwear: 'VR Visor', top: 'T-shirt', outer: 'Leather jacket', bottoms: 'Jeans', shoes: 'High-tops', gloves: 'Haptic gloves', accessory: 'None' },
+  topColor: 5, outerColor: 10, bottomColor: 5,
+  pet: 'Robo Drone', petName: 'Max', weapons: ['Energy Blade', 'Blaster Pistol'], items: ['Healing Potion', 'Zemeckis Cube'], tab: 'identity',
+};
+
+let S;
+const SAVE_KEY = 'oasis-avatar-v1';
+function load(seed) {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) {}
+  S = Object.assign(structuredClone(DEFAULT), seed && Object.keys(seed).length ? seed : saved || {});
+  S.outfit = Object.assign({}, DEFAULT.outfit, S.outfit);
+  if (!Array.isArray(S.weapons)) S.weapons = DEFAULT.weapons.slice();
+  if (!Array.isArray(S.items)) S.items = DEFAULT.items.slice();
+}
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+// ======================= HELPERS =======================
+const $ = id => document.getElementById(id);
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'on') for (const [ev, fn] of Object.entries(v)) el.addEventListener(ev, fn);
+    else if (k === 'class') el.className = v;
+    else if (v === true) el.setAttribute(k, '');
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  return el;
+};
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const race = () => RACES.find(r => r.id === S.race);
+const cls = () => CLASSES.find(c => c.id === S.cls);
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const f = c => clamp(Math.round(c + (amt < 0 ? c * amt : (255 - c) * amt)), 0, 255);
+  const r = f(n >> 16), g = f((n >> 8) & 255), b = f(n & 255);
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+function oasisId() {
+  let x = 0; for (const ch of S.name + S.race + S.cls) x = (x * 31 + ch.charCodeAt(0)) >>> 0;
+  const hx = x.toString(16).toUpperCase().padStart(8, '0');
+  return hx.slice(0, 4) + '-' + hx.slice(4, 8);
+}
+function stats() {
+  const st = { STR: 5, AGI: S.speed, INT: 5, CHA: 5, VIT: 5 };
+  for (const m of [race().mod, cls().mod]) for (const [k, v] of Object.entries(m)) st[k] += v;
+  if (S.powers.includes('Super Strength')) st.STR += 2;
+  if (S.powers.includes('Healing')) st.VIT += 1;
+  if (S.height > 195) st.STR += 1;
+  for (const w of S.weapons) { const def = WEAPONS.find(x => x[0] === w); if (def) st[def[2]] += 1; }
+  if (S.items.includes('Ring of Protection') || S.items.includes('Amulet of Life')) st.VIT += 1;
+  if (S.items.includes('Spellbook')) st.INT += 1;
+  for (const k in st) st[k] = clamp(st[k], 1, 15);
+  return st;
+}
+const speedMs = () => (3 + S.speed * 1.4).toFixed(1);
+function heightLabel(cm) { const inch = Math.round(cm / 2.54); return `${cm} cm · ${Math.floor(inch / 12)}′${inch % 12}″`; }
+function weightLabel(kg) { return `${kg} kg · ${Math.round(kg * 2.2046)} lb`; }
+
+// ======================= AVATAR RENDERER =======================
+const cv = $('avatar'), ctx = cv.getContext('2d');
+const U = 5, GW = 48, GH = 72;
+function P(x, y, w, hgt, c) { if (!c) return; ctx.fillStyle = c; ctx.fillRect(Math.round(x) * U, Math.round(y) * U, Math.round(w) * U, Math.round(hgt) * U); }
+
+const PET_SPRITES = {
+  'Cat': ['.a......a...', '.aa....aa...', '.aaaaaaaa...', '.aeaaaaea...', '.aaaapaaa..a', '..aaaaaa..a.', '.aaaaaaaaaa.', '.aaaaaaaaa..', '.a.a...a.a..'],
+  'Dog': ['............', 'bb.....bb...', 'baaaaaaab...', '.aeaaaea....', '.aaaeeaa...a', '..aappaa..a.', '.aaaaaaaaaa.', '.aaaaaaaaaa.', '.a.a...a.a..'],
+  'Mini Dragon': ['....b.......', '...aab......', 'b..aeaa.....', 'bb.aaaaww...', 'bbbaaaa.....', '.bbaaaaa..a.', '..aaaaaaaaa.', '..aa.aa..a..', '..a...a.....'],
+  'Robo Drone': ['.....w......', '.....a......', 'bbb.aaa.bbb.', '..aaaaaaa...', '.aaeeweeaa..', '.aaaaaaaaa..', '..aaaaaaa...', '...b...b....', '............'],
+  'Owl': ['.a......a...', '.aaaaaaaa...', 'awwaaaawwa..', 'aweaaaaewa..', 'aaaappaaaa..', 'abbbbbbbba..', 'abbbbbbbba..', '.aaaaaaaa...', '..p....p....'],
+  'Fox': ['a......a....', 'aa....aa....', 'aaaaaaaa....', 'aeaaaaea....', 'wwaaeaww..aa', '.wwwwww..aaw', '.aaaaaaaaaa.', '.aaaaaaaa...', '.a.a..a.a...'],
+  'Slime': ['............', '............', '....aaaa....', '..aaaawaa...', '.aaaaaaaaa..', '.aaeaaaeaa..', 'aaaaappaaaa.', 'aaaaaaaaaaa.', '.aaaaaaaaa..'],
+  'Unicorn': ['p...........', '.p..........', '.aaab.......', '.aeabb......', 'aaaabbb.....', '....aaaaaaab', '....aaaaaaabb', '....a.a.a.a.', '....p.p.p.p.'],
+};
+const PET_COLORS = {
+  'Cat': { a: '#f0a35e', p: '#ff8fb1' }, 'Dog': { a: '#c8935a', b: '#7a5230', p: '#ff6f91' },
+  'Mini Dragon': { a: '#3ecf8e', b: '#1f8a5b', w: '#ff9f43' }, 'Robo Drone': { a: '#9aa5b8', b: '#59e3ff', w: '#59e3ff', e: '#0f0c22' },
+  'Owl': { a: '#8a6a4a', b: '#d9c3a0', w: '#fff3c4', p: '#ffb84d' }, 'Fox': { a: '#ff7a2f', w: '#fff3e6' },
+  'Slime': { a: '#6ee7ff', w: '#e9fbff', p: '#ff8fb1' }, 'Unicorn': { a: '#f6f2ff', b: '#ff7ad9', p: '#ffd23f' },
+};
+
+function drawAvatar(t) {
+  const sk = SKIN[S.skin], skd = shade(sk, -0.18), skl = shade(sk, 0.12);
+  const hc = HAIR_COLORS[S.hairColor], hd = shade(hc, -0.3);
+  const ec = EYE_COLORS[S.eyeColor];
+  const topC = CLOTH_COLORS[S.topColor], outC = CLOTH_COLORS[S.outerColor], botC = CLOTH_COLORS[S.bottomColor];
+  const o = S.outfit, r = S.race, accent = cls().color;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bob = reduce ? 0 : (Math.floor(t / 600) % 2);
+
+  // backdrop: synth floor grid tinted by class colour
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const g = ctx.createRadialGradient(cv.width * 0.42, cv.height * 0.45, 10, cv.width * 0.42, cv.height * 0.45, cv.width * 0.8);
+  g.addColorStop(0, shade(accent, -0.55)); g.addColorStop(1, '#0a0819');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.strokeStyle = shade(accent, -0.35); ctx.lineWidth = 1;
+  for (let i = 0; i < 6; i++) { const y = cv.height - 6 - i * i * 4; ctx.globalAlpha = 0.5 - i * 0.07; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cv.width, y); ctx.stroke(); }
+  for (let i = -6; i <= 6; i++) { ctx.globalAlpha = 0.25; ctx.beginPath(); ctx.moveTo(cv.width / 2 + i * 10, cv.height - 70); ctx.lineTo(cv.width / 2 + i * 40, cv.height); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+
+  // geometry from height/weight
+  const cx = 20;
+  const bodyH = clamp(Math.round(54 * S.height / 170), 40, 64);
+  const feetY = 70, hy = feetY - bodyH - bob, hx = cx - 6;
+  const rest = bodyH - 14, torsoH = Math.round(rest * 0.45), legH = rest - torsoH - 2;
+  const torsoY = hy + 14;
+  const bmi = S.weight / Math.pow(S.height / 100, 2);
+  let tw = clamp(Math.round(5 + bmi * 0.32), 10, 20); tw -= tw % 2;
+  const tx = cx - tw / 2, legY = torsoY + torsoH, lw = tw / 2 - 1;
+  const aw = 3;
+
+  // speed streaks
+  if (S.speed >= 7) for (let i = 0; i < S.speed - 5; i++) P(1 + (i % 2) * 2, torsoY + 2 + i * 3, 4 + (i % 3), 1, shade(accent, 0.2));
+
+  // pet
+  const pet = PET_SPRITES[S.pet];
+  if (pet) {
+    const pal = Object.assign({ e: '#14101f', w: '#ffffff', p: '#ff8fb1', b: '#555' }, PET_COLORS[S.pet]);
+    const hover = S.pet === 'Robo Drone' || S.pet === 'Owl' ? (reduce ? -10 : -10 - (Math.floor(t / 400) % 2)) : 0;
+    const px = 35, py = feetY - pet.length + hover;
+    pet.forEach((row, y) => [...row].forEach((c, x) => { if (c !== '.') P(px + x, py + y, 1, 1, pal[c]); }));
+  }
+
+  // behind the body: cape, long hair, afro, hood, backpack, sword
+  if (o.outer === 'Cape') P(tx - 2, torsoY, tw + 4, torsoH + legH - 1, shade(outC, -0.2));
+  if (o.accessory === 'Sword on back') { for (let i = 0; i < 14; i++) P(tx + tw - 2 - i * 0.6, torsoY - 3 + i, 1, 1, '#c9d1d9'); P(tx + tw - 1, torsoY - 5, 2, 2, '#8a5a3b'); P(tx + tw - 2, torsoY - 3, 4, 1, '#ffc94a'); }
+  if (o.accessory === 'Backpack') P(tx - 1, torsoY + 1, tw + 2, torsoH - 1, '#6b4a2b');
+  if (S.hairStyle === 'Long') P(hx - 1, hy + 2, 14, 18, hd);
+  if (S.hairStyle === 'Ponytail') P(hx + 11, hy + 3, 3, 10, hd);
+  if (S.hairStyle === 'Braids') { for (let i = 0; i < 14; i += 2) { P(hx - 1, hy + 6 + i, 2, 1, hc); P(hx - 1, hy + 7 + i, 2, 1, hd); P(hx + 11, hy + 6 + i, 2, 1, hc); P(hx + 11, hy + 7 + i, 2, 1, hd); } }
+  if (S.hairStyle === 'Afro') { P(hx - 3, hy - 4, 18, 12, hc); P(hx - 2, hy - 5, 16, 1, hc); P(hx - 4, hy - 2, 1, 8, hc); P(hx + 15, hy - 2, 1, 8, hc); }
+  if (o.top === 'Hoodie' && o.headwear !== 'Helmet') P(hx - 1, hy + 1, 14, 13, shade(topC, -0.25));
+
+  // legs + bottoms
+  const legC = ['Shorts', 'Skirt'].includes(o.bottoms) ? sk : o.bottoms === 'Armor greaves' ? '#8b93a7' : botC;
+  P(tx, legY, lw, legH, legC); P(tx + tw - lw, legY, lw, legH, legC);
+  if (o.bottoms === 'Shorts') { P(tx, legY, tw, Math.ceil(legH * 0.4), botC); }
+  if (o.bottoms === 'Skirt') { P(tx - 1, legY, tw + 2, Math.ceil(legH * 0.45), botC); P(tx - 2, legY + Math.ceil(legH * 0.45) - 1, tw + 4, 1, shade(botC, -0.2)); }
+  if (o.bottoms === 'Cargo pants') { P(tx, legY + Math.floor(legH * 0.4), 2, 3, shade(botC, -0.25)); P(tx + tw - 2, legY + Math.floor(legH * 0.4), 2, 3, shade(botC, -0.25)); }
+  if (o.bottoms === 'Track pants') { P(tx, legY, 1, legH, '#f2f2f2'); P(tx + tw - 1, legY, 1, legH, '#f2f2f2'); }
+  if (o.bottoms === 'Jeans') { P(tx + lw - 1, legY, 1, legH, shade(botC, -0.2)); P(tx + tw - lw, legY, 1, legH, shade(botC, -0.2)); }
+  if (o.bottoms === 'Armor greaves') for (let y = legY + 2; y < legY + legH; y += 3) { P(tx, y, lw, 1, '#c9d1d9'); P(tx + tw - lw, y, lw, 1, '#c9d1d9'); }
+
+  // shoes
+  const shoeY = legY + legH;
+  const shoe = (x) => {
+    switch (o.shoes) {
+      case 'Sneakers': P(x, shoeY, lw + 1, 2, '#f2f2f2'); P(x, shoeY + 1, lw + 1, 1, accent); break;
+      case 'Boots': P(x, shoeY - 3, lw, 3, '#5a3a22'); P(x, shoeY, lw + 1, 2, '#4a2e1a'); break;
+      case 'High-tops': P(x, shoeY - 2, lw, 2, '#e94b3c'); P(x, shoeY, lw + 1, 2, '#e94b3c'); P(x, shoeY + 1, lw + 1, 1, '#f2f2f2'); break;
+      case 'Sandals': P(x, shoeY, lw + 1, 2, sk); P(x, shoeY, lw + 1, 1, '#8a5a3b'); P(x, shoeY + 1, lw + 1, 1, shade(sk, -0.3)); break;
+      case 'Rocket boots': P(x, shoeY - 2, lw, 2, '#9aa5b8'); P(x, shoeY, lw + 1, 2, '#c9d1d9'); if (!reduce || true) { P(x + 1, shoeY + 2 - bob, lw - 1, 1, '#ff9f43'); } break;
+    }
+  };
+  shoe(tx); shoe(tx + tw - lw);
+
+  // torso / top
+  const sleeveFull = ['Leather jacket', 'Trench coat', 'Bomber', 'Lab coat'].includes(o.outer) ? outC2() : ['Hoodie', 'Armor plate', 'Robe', 'Tux shirt'].includes(o.top) ? topCol() : null;
+  function topCol() { return o.top === 'Armor plate' ? '#8b93a7' : o.top === 'Tux shirt' ? '#f2f2f2' : topC; }
+  function outC2() { return o.outer === 'Lab coat' ? '#f2f2f2' : o.outer === 'Leather jacket' ? (S.outerColor === 10 ? '#2a2a35' : outC) : outC; }
+  if (o.top === 'Robe') P(tx - 1, torsoY, tw + 2, torsoH + legH, topC);
+  P(tx, torsoY, tw, torsoH, topCol());
+  if (o.top === 'Tank top') { P(tx, torsoY, 2, 2, sk); P(tx + tw - 2, torsoY, 2, 2, sk); P(tx + 3, torsoY, tw - 6, 2, sk); }
+  if (o.top === 'Hoodie') { P(tx + 2, torsoY + torsoH - 4, tw - 4, 3, shade(topC, -0.15)); P(cx - 1, torsoY, 1, 4, '#f2f2f2'); P(cx + 1, torsoY, 1, 4, '#f2f2f2'); }
+  if (o.top === 'Armor plate') { P(tx - 1, torsoY - 1, 4, 3, '#c9d1d9'); P(tx + tw - 3, torsoY - 1, 4, 3, '#c9d1d9'); for (let y = torsoY + 3; y < torsoY + torsoH; y += 3) P(tx + 1, y, tw - 2, 1, '#6b7386'); P(cx - 1, torsoY + 3, 2, 2, accent); }
+  if (o.top === 'Tux shirt') { P(cx - 2, torsoY, 4, 1, '#14101f'); P(cx - 1, torsoY + 1, 2, 1, '#14101f'); for (let y = torsoY + 3; y < torsoY + torsoH; y += 2) P(cx, y, 1, 1, '#14101f'); }
+  if (o.top === 'T-shirt' && S.cls === 'hacker') P(cx - 2, torsoY + 3, 4, 3, shade(topC, 0.35));
+  if (o.top === 'Robe') { P(cx - 1, torsoY, 2, torsoH + legH, shade(topC, -0.2)); P(tx - 1, legY - 1, tw + 2, 1, '#ffc94a'); }
+
+  // outerwear
+  if (['Leather jacket', 'Trench coat', 'Bomber', 'Lab coat'].includes(o.outer)) {
+    const oc = outC2(), long = ['Trench coat', 'Lab coat'].includes(o.outer);
+    const hgt = torsoH + (long ? Math.floor(legH * 0.6) : 0);
+    const side = Math.floor((tw - 4) / 2);
+    P(tx - 1, torsoY, side + 1, hgt, oc); P(tx + tw - side, torsoY, side + 1, hgt, oc);
+    P(tx + side - 1, torsoY, 1, 3, shade(oc, -0.3)); P(tx + tw - side, torsoY, 1, 3, shade(oc, -0.3));
+    if (o.outer === 'Bomber') P(tx - 1, torsoY + torsoH - 1, tw + 2, 1, shade(oc, -0.3));
+    if (o.outer === 'Leather jacket') { P(tx + 1, torsoY + 4, 2, 1, '#c9d1d9'); }
+  }
+  if (o.outer === 'Cape') { P(tx - 1, torsoY - 1, tw + 2, 2, outC); }
+
+  // arms
+  const armLen = torsoH + 2;
+  for (const ax of [tx - aw, tx + tw]) {
+    if (sleeveFull) { P(ax, torsoY, aw, armLen, sleeveFull); }
+    else if (o.top === 'T-shirt') { P(ax, torsoY, aw, armLen, sk); P(ax, torsoY, aw, 3, topC); }
+    else P(ax, torsoY, aw, armLen, sk);
+    if (o.top === 'Robe' && !['Leather jacket', 'Trench coat', 'Bomber', 'Lab coat'].includes(o.outer)) P(ax - (ax < cx ? 1 : 0), torsoY + armLen - 3, aw + 1, 3, topC);
+    const handY = torsoY + armLen;
+    const glove = { 'Fingerless': '#2a2a35', 'Gauntlets': '#8b93a7', 'Haptic gloves': '#1b1b26' }[o.gloves];
+    if (o.gloves === 'Gauntlets') P(ax, handY - 3, aw, 5, glove);
+    else P(ax, handY, aw, 2, glove || sk);
+    if (o.gloves === 'Fingerless') P(ax, handY + 1, aw, 1, sk);
+    if (o.gloves === 'Haptic gloves') { P(ax + 1, handY, 1, 1, '#59e3ff'); }
+  }
+
+  // neck + head
+  P(cx - 2, hy + 12, 4, 2, skd);
+  P(hx, hy + 1, 12, 10, sk); P(hx + 1, hy, 10, 12, sk);
+  P(hx + 1, hy + 11, 10, 1, skd);
+  // ears
+  if (['elf', 'gnome'].includes(r)) { P(hx - 1, hy + 4, 1, 3, sk); P(hx - 2, hy + 2, 1, 3, sk); P(hx + 12, hy + 4, 1, 3, sk); P(hx + 13, hy + 2, 1, 3, sk); }
+  else if (r === 'orc') { P(hx - 2, hy + 4, 2, 3, sk); P(hx + 12, hy + 4, 2, 3, sk); }
+  else if (r !== 'android') { P(hx - 1, hy + 5, 1, 2, skd); P(hx + 12, hy + 5, 1, 2, skd); }
+
+  // eyes
+  const ey = hy + 5, exL = hx + 2, exR = hx + 7;
+  const masks = {
+    Round: ['WIW', 'WIW'], Almond: ['LLL', 'WIW'], Narrow: ['...', 'LIL'],
+    Wide: ['WWW', 'WIW', 'WWW'], Cat: ['WIW', 'WPW'],
+  };
+  if (S.eyeShape === 'Visor') { P(hx + 1, ey, 10, 2, ec); P(hx + 2, ey, 3, 1, shade(ec, 0.5)); }
+  else {
+    const m = masks[S.eyeShape] || masks.Almond, off = m.length === 3 ? -1 : 0;
+    for (const ex of [exL, exR]) m.forEach((row, y) => [...row].forEach((c, x) => {
+      const col = { W: '#f8f8ff', I: ec, L: '#1b1420', P: '#14101f' }[c];
+      if (col) P(ex + x, ey + y + off, 1, 1, col);
+    }));
+  }
+  if (r === 'cyborg' && S.eyeShape !== 'Visor') { P(exR, ey, 3, 2, '#ff3355'); P(hx + 10, hy + 2, 2, 7, '#8b93a7'); P(hx + 11, hy + 3, 1, 1, '#ff3355'); }
+  // brows, nose, mouth
+  if (S.eyeShape !== 'Visor') { P(exL, ey - 2, 3, 1, hd); P(exR, ey - 2, 3, 1, hd); }
+  P(cx - (r === 'gnome' ? 1 : 0), hy + 7, r === 'gnome' ? 2 : 1, r === 'gnome' ? 2 : 1, skd);
+  P(cx - 2, hy + 9, 4, 1, shade(sk, -0.35));
+  if (r === 'orc') { P(cx - 3, hy + 8, 1, 2, '#f8f3e0'); P(cx + 2, hy + 8, 1, 2, '#f8f3e0'); }
+  if (r === 'android') { P(hx, hy + 3, 1, 6, '#9aa5b8'); P(hx + 11, hy + 3, 1, 6, '#9aa5b8'); P(cx, hy - 4, 1, 4, '#9aa5b8'); P(cx - 1, hy - 5, 3, 1, '#59e3ff'); }
+  if (r === 'undead') { P(hx + 2, hy + 8, 5, 1, '#3d2b3d'); for (let x = hx + 2; x < hx + 7; x += 2) P(x, hy + 7, 1, 3, '#3d2b3d'); }
+  if (r === 'dragonborn') { P(hx + 1, hy - 3, 2, 3, '#f3e6c4'); P(hx + 9, hy - 3, 2, 3, '#f3e6c4'); P(hx, hy - 4, 1, 2, '#f3e6c4'); P(hx + 11, hy - 4, 1, 2, '#f3e6c4'); P(hx + 2, hy + 10, 1, 1, skd); P(hx + 9, hy + 2, 1, 1, skd); P(hx + 3, hy + 3, 1, 1, skl); }
+  if (r === 'dwarf') { P(hx + 1, hy + 8, 10, 4, hc); P(hx + 2, hy + 12, 8, 3, hc); P(hx + 4, hy + 15, 4, 2, hd); P(cx - 2, hy + 9, 4, 1, shade(hc, -0.4)); }
+
+  // hair on top of head
+  const hs = S.hairStyle;
+  if (hs === 'Buzz cut') { P(hx + 1, hy, 10, 2, hd); }
+  if (['Short', 'Spiky', 'Long', 'Ponytail', 'Top bun', 'Braids', 'Afro'].includes(hs)) {
+    P(hx, hy - 1, 12, 3, hc); P(hx + 1, hy - 2, 10, 1, hc); P(hx, hy + 2, 1, 3, hc); P(hx + 11, hy + 2, 1, 3, hc); P(hx + 2, hy + 2, 3, 1, hc);
+  }
+  if (hs === 'Spiky') for (let i = 0; i < 5; i++) { P(hx + i * 2 + 1, hy - 3 - (i % 2), 2, 2, hc); P(hx + i * 2 + 1, hy - 4 - (i % 2), 1, 1, hc); }
+  if (hs === 'Mohawk') { P(cx - 2, hy - 4, 4, 6, hc); P(cx - 1, hy - 5, 2, 1, hc); P(hx + 1, hy, 10, 1, hd); }
+  if (hs === 'Top bun') { P(cx - 2, hy - 5, 4, 3, hc); P(cx - 3, hy - 4, 6, 1, hc); }
+  if (hs === 'Long') { P(hx - 1, hy + 1, 2, 12, hc); P(hx + 11, hy + 1, 2, 12, hc); }
+  if (hs === 'Afro') { P(hx - 1, hy - 2, 14, 4, hc); }
+
+  // headwear
+  switch (o.headwear) {
+    case 'Cap': P(hx, hy - 2, 12, 3, accent); P(hx + 8, hy + 1, 7, 1, shade(accent, -0.3)); P(cx - 1, hy - 3, 2, 1, shade(accent, -0.3)); break;
+    case 'Beanie': P(hx - 1, hy - 3, 14, 5, '#3a6ff7'); P(hx - 1, hy + 1, 14, 1, '#2a4fbf'); P(cx - 1, hy - 4, 2, 1, '#f2f2f2'); break;
+    case 'Headphones': P(hx, hy - 3, 12, 1, '#2a2a35'); P(hx - 2, hy + 3, 3, 5, '#2a2a35'); P(hx + 11, hy + 3, 3, 5, '#2a2a35'); P(hx - 2, hy + 4, 1, 3, accent); P(hx + 13, hy + 4, 1, 3, accent); break;
+    case 'Crown': P(hx + 1, hy - 3, 10, 2, '#ffc94a'); for (let i = 0; i < 4; i++) P(hx + 1 + i * 3, hy - 5, 1, 2, '#ffc94a'); P(cx - 1, hy - 3, 2, 1, '#e94b3c'); break;
+    case 'Helmet': P(hx - 1, hy - 2, 14, 9, '#8b93a7'); P(hx + 1, ey, 10, 2, '#14101f'); P(hx + 2, ey, 3, 1, accent); P(hx - 1, hy - 2, 14, 1, '#c9d1d9'); break;
+    case 'VR Visor': P(hx - 1, ey - 1, 14, 4, '#14101f'); P(hx, ey, 12, 2, '#20304a'); P(hx + 1, ey, 4, 1, '#59e3ff'); P(hx - 1, hy + 2, 1, 3, '#14101f'); P(hx + 12, hy + 2, 1, 3, '#14101f'); break;
+    case 'Wizard Hat': { const hcW = '#5b3fd1'; for (let i = 0; i < 8; i++) P(cx - 1 - Math.floor(i * 0.8), hy - 9 + i, 2 + Math.floor(i * 1.6), 1, hcW); P(hx - 3, hy - 1, 18, 2, shade(hcW, -0.3)); P(cx, hy - 6, 1, 1, '#ffc94a'); P(cx - 3, hy - 3, 1, 1, '#ffc94a'); break; }
+  }
+
+  // accessories
+  if (o.accessory === 'Sunglasses' && o.headwear !== 'VR Visor' && o.headwear !== 'Helmet') { P(hx + 1, ey - 1, 10, 1, '#14101f'); P(exL - 1, ey - 1, 4, 3, '#14101f'); P(exR, ey - 1, 4, 3, '#14101f'); P(exL, ey - 1, 1, 1, '#59e3ff'); }
+  if (o.accessory === 'Scarf') { P(cx - 4, hy + 12, 8, 3, '#e94b3c'); P(cx + 1, hy + 15, 3, 6, '#c03a2c'); }
+  if (o.accessory === 'Gold chain') { for (let x = cx - 3; x <= cx + 2; x++) P(x, Math.abs(x - cx + 0.5) < 2 ? torsoY + 3 : torsoY + 2, 1, 1, '#ffc94a'); P(cx - 1, torsoY + 4, 2, 2, '#ffc94a'); }
+  if (o.accessory === 'Backpack') { P(tx + 1, torsoY, 1, torsoH, '#4a3220'); P(tx + tw - 2, torsoY, 1, torsoH, '#4a3220'); }
+
+  // main weapon in the right hand (viewer's left)
+  const wpn = S.weapons[0];
+  if (wpn) {
+    const hxw = tx - aw + 1, hyw = torsoY + armLen; // hand position
+    const steel = '#d6dbe6', wood = '#8a5a3b', gold = '#ffc94a';
+    switch (wpn) {
+      case 'Longsword': P(hxw, hyw - 12, 1, 12, steel); P(hxw - 1, hyw - 1, 3, 1, gold); P(hxw, hyw + 1, 1, 2, wood); break;
+      case 'Katana': for (let i = 0; i < 12; i++) P(hxw - Math.floor(i / 6), hyw - 1 - i, 1, 1, steel); P(hxw - 1, hyw, 3, 1, '#14101f'); P(hxw, hyw + 1, 1, 2, '#e94b3c'); break;
+      case 'Battle Axe': P(hxw, hyw - 10, 1, 14, wood); P(hxw - 3, hyw - 10, 3, 4, steel); P(hxw - 4, hyw - 9, 1, 2, steel); break;
+      case 'War Hammer': P(hxw, hyw - 9, 1, 13, wood); P(hxw - 2, hyw - 11, 5, 3, '#8b93a7'); break;
+      case 'Twin Daggers': P(hxw, hyw - 4, 1, 4, steel); P(hxw - 1, hyw, 3, 1, gold); P(tx + tw + 1, hyw - 4, 1, 4, steel); P(tx + tw, hyw, 3, 1, gold); break;
+      case 'Energy Blade': P(hxw, hyw - 13, 1, 13, accent); P(hxw, hyw - 13, 1, 1, '#ffffff'); P(hxw - 1, hyw - 12, 1, 11, shade(accent, -0.5)); P(hxw, hyw, 1, 3, '#9aa5b8'); break;
+      case 'Longbow': for (let i = 0; i < 16; i++) P(hxw - 2 + Math.round(Math.sin(i / 15 * Math.PI) * -2), hyw - 8 + i, 1, 1, wood); P(hxw - 2, hyw - 8, 1, 16, '#f2f2f2'); break;
+      case 'Crossbow': P(hxw - 3, hyw - 1, 7, 1, wood); P(hxw - 4, hyw - 3, 1, 5, steel); P(hxw - 3, hyw - 2, 1, 1, steel); break;
+      case 'Blaster Pistol': P(hxw - 3, hyw - 1, 5, 2, '#3a3a48'); P(hxw, hyw + 1, 2, 2, '#3a3a48'); P(hxw - 3, hyw - 1, 1, 1, '#ff6f61'); break;
+      case 'Plasma Rifle': P(hxw - 6, hyw - 1, 10, 2, '#3a3a48'); P(hxw - 6, hyw - 1, 2, 1, '#7cf2a6'); P(hxw, hyw + 1, 2, 2, '#3a3a48'); P(hxw - 3, hyw - 2, 2, 1, '#59e3ff'); break;
+      case 'Magic Staff': P(hxw, hyw - 14, 1, 20, wood); P(hxw - 1, hyw - 16, 3, 3, '#a77bff'); P(hxw, hyw - 15, 1, 1, '#ffffff'); break;
+      case 'Chain Whip': for (let i = 0; i < 10; i++) P(hxw - Math.floor(i / 2), hyw + 1 + i, 1, 1, i % 2 ? '#8b93a7' : '#c9d1d9'); P(hxw, hyw - 1, 1, 2, wood); break;
+    }
+  }
+
+  // power sparks
+  const sparkCols = { Fireball: '#ff7a2f', Lightning: '#59e3ff', Healing: '#7cf2a6', 'Force Field': '#a77bff', Flight: '#f2f2f2', Invisibility: '#9d96cc', Teleport: '#ff7ad9', 'Time Slow': '#ffc94a' };
+  if (!reduce) S.powers.forEach((p, i) => {
+    const c = sparkCols[p] || accent, a = t / 500 + i * Math.PI;
+    P(cx + Math.round(Math.cos(a) * 13), torsoY + 4 + Math.round(Math.sin(a) * 6), 1, 1, c);
+    P(cx + Math.round(Math.cos(a + 2) * 12), torsoY + Math.round(Math.sin(a + 2) * 8), 1, 1, shade(c, 0.4));
+  });
+}
+
+let raf;
+function loop(t) { drawAvatar(t); raf = requestAnimationFrame(loop); }
+
+// ======================= UI =======================
+function chooser(items, current, onPick, { small = false, disabled = () => false } = {}) {
+  return h('div', { class: 'choices' + (small ? ' small' : '') }, items.map(([val, title, desc]) =>
+    h('button', { class: 'opt', type: 'button', 'aria-pressed': String(current(val)), disabled: disabled(val), on: { click: () => onPick(val) } },
+      h('b', {}, title), desc ? h('small', {}, desc) : null)));
+}
+function swatches(colors, names, current, onPick) {
+  return h('div', { class: 'swatches', role: 'group' }, colors.map((c, i) =>
+    h('button', { class: 'sw', type: 'button', title: names ? names[i] : c, 'aria-label': names ? names[i] : c, 'aria-pressed': String(current === i), style: `background:${c}`, on: { click: () => onPick(i) } })));
+}
+function field(label, control, value) {
+  return h('div', { class: 'field' }, h('div', { class: 'label' }, h('span', {}, label), value != null ? h('output', {}, value) : null), control);
+}
+function slider(id, min, max, val, step, onInput) {
+  return h('input', { type: 'range', id, min, max, step, value: val, on: { input: e => onInput(+e.target.value) } });
+}
+function set(patch, rerender = true) { Object.assign(S, patch); save(); updateRig(); if (rerender) renderPane(); }
+
+const PANES = {
+  identity() {
+    return [
+      h('h2', {}, 'Who are you in the OASIS?'),
+      h('p', { class: 'lead' }, 'Your avatar name is how other gunters will know you. Real names stay outside the visor.'),
+      h('div', { class: 'row2' },
+        field('Avatar name', h('input', { type: 'text', id: 'name', maxlength: 20, value: S.name, on: { input: e => set({ name: e.target.value || 'Unnamed' }, false) } })),
+        field('Age', slider('age', 13, 300, S.age, 1, v => { S.age = v; save(); updateRig(); $('age').closest('.field').querySelector('output').textContent = ageLabel(); }), ageLabel())),
+      field('Race', chooser(RACES.map(r => [r.id, r.name, r.d]), v => v === S.race, v => set({ race: v }))),
+    ];
+  },
+  class() {
+    const c = cls();
+    return [
+      h('h2', {}, 'Class & subclass'),
+      h('p', { class: 'lead' }, 'Your class sets your main stats. The subclass is your specialty inside it.'),
+      field('Class', chooser(CLASSES.map(k => [k.id, k.name, k.d]), v => v === S.cls, v => { const nc = CLASSES.find(k => k.id === v); set({ cls: v, sub: nc.subs[0][0] }); })),
+      field(`${c.name} subclass`, chooser(c.subs.map(([n, d]) => [n, n, d]), v => v === S.sub, v => set({ sub: v }))),
+    ];
+  },
+  powers() {
+    const full = S.powers.length >= 2;
+    return [
+      h('h2', {}, 'Pick two powers'),
+      h('p', { class: 'lead' }, 'Choose exactly two. Tap a chosen power again to swap it out.'),
+      h('div', { class: 'field' },
+        h('div', { class: 'label' }, h('span', {}, 'Powers'), h('span', { class: 'counter' }, `${S.powers.length} / 2`)),
+        chooser(POWERS.map(([n, d]) => [n, n, d]), v => S.powers.includes(v), v => {
+          const p = S.powers.includes(v) ? S.powers.filter(x => x !== v) : S.powers.concat(v).slice(0, 2);
+          set({ powers: p });
+        }, { disabled: v => full && !S.powers.includes(v) }),
+        h('div', { class: 'note' + (S.powers.length < 2 ? ' warn' : '') }, S.powers.length < 2 ? `Choose ${2 - S.powers.length} more.` : 'Both slots filled.')),
+      field('Speed', slider('speed', 1, 10, S.speed, 1, v => { S.speed = v; save(); updateRig(); $('speed').closest('.field').querySelector('output').textContent = speedLabel(); }), speedLabel()),
+      h('p', { class: 'note' }, 'Speed sets your Agility stat. At 7 and above you leave motion trails.'),
+    ];
+  },
+  body() {
+    return [
+      h('h2', {}, 'Body'),
+      h('p', { class: 'lead' }, 'Height and weight change your avatar’s build in the preview.'),
+      h('div', { class: 'row2' },
+        field('Height', slider('height', 100, 230, S.height, 1, v => { S.height = v; save(); updateRig(); $('height').closest('.field').querySelector('output').textContent = heightLabel(v); }), heightLabel(S.height)),
+        field('Weight', slider('weight', 30, 180, S.weight, 1, v => { S.weight = v; save(); updateRig(); $('weight').closest('.field').querySelector('output').textContent = weightLabel(v); }), weightLabel(S.weight))),
+      field('Skin tone', swatches(SKIN, SKIN_NAMES, S.skin, i => set({ skin: i })), SKIN_NAMES[S.skin]),
+    ];
+  },
+  face() {
+    return [
+      h('h2', {}, 'Face & hair'),
+      field('Eye colour', swatches(EYE_COLORS, EYE_NAMES, S.eyeColor, i => set({ eyeColor: i })), EYE_NAMES[S.eyeColor]),
+      field('Eye shape', chooser(EYE_SHAPES.map(([n, d]) => [n, n, d]), v => v === S.eyeShape, v => set({ eyeShape: v }), { small: true })),
+      field('Hair style', chooser(HAIR_STYLES.map(n => [n, n]), v => v === S.hairStyle, v => set({ hairStyle: v }), { small: true })),
+      field('Hair colour', swatches(HAIR_COLORS, HAIR_NAMES, S.hairColor, i => set({ hairColor: i })), HAIR_NAMES[S.hairColor]),
+    ];
+  },
+  outfit() {
+    const slot = key => field(OUTFIT[key].label, chooser(OUTFIT[key].items.map(n => [n, n]), v => v === S.outfit[key], v => set({ outfit: Object.assign({}, S.outfit, { [key]: v }) }), { small: true }));
+    return [
+      h('h2', {}, 'Outfit'),
+      h('p', { class: 'lead' }, 'Pick each item separately, then colour your top, jacket and bottoms.'),
+      slot('headwear'), slot('top'),
+      field('Top colour', swatches(CLOTH_COLORS, null, S.topColor, i => set({ topColor: i }))),
+      slot('outer'),
+      field('Jacket / cape colour', swatches(CLOTH_COLORS, null, S.outerColor, i => set({ outerColor: i }))),
+      slot('bottoms'),
+      field('Bottoms colour', swatches(CLOTH_COLORS, null, S.bottomColor, i => set({ bottomColor: i }))),
+      slot('shoes'), slot('gloves'), slot('accessory'),
+    ];
+  },
+  gear() {
+    const wFull = S.weapons.length >= 2, iFull = S.items.length >= 3;
+    const toggle = (key, max) => v => set({ [key]: S[key].includes(v) ? S[key].filter(x => x !== v) : S[key].concat(v).slice(0, max) });
+    return [
+      h('h2', {}, 'Gear'),
+      h('p', { class: 'lead' }, 'Fill your inventory. Your first weapon is the one in your hand. Tap a chosen item again to drop it.'),
+      h('div', { class: 'field' },
+        h('div', { class: 'label' }, h('span', {}, 'Weapons'), h('span', { class: 'counter' }, `${S.weapons.length} / 2`)),
+        chooser(WEAPONS.map(([n, d, st]) => [n, n, `${d} · +1 ${st}`]), v => S.weapons.includes(v), toggle('weapons', 2), { small: true, disabled: v => wFull && !S.weapons.includes(v) })),
+      S.weapons.length === 2 ? h('div', { class: 'top-actions' }, h('button', { class: 'btn', type: 'button', on: { click: () => set({ weapons: [S.weapons[1], S.weapons[0]] }) } }, `Hold ${S.weapons[1]} instead`)) : null,
+      h('div', { class: 'field' },
+        h('div', { class: 'label' }, h('span', {}, 'Magical items'), h('span', { class: 'counter' }, `${S.items.length} / 3`)),
+        chooser(MAGIC_ITEMS.map(([n, d]) => [n, n, d]), v => S.items.includes(v), toggle('items', 3), { small: true, disabled: v => iFull && !S.items.includes(v) })),
+    ];
+  },
+  pet() {
+    return [
+      h('h2', {}, 'Companion'),
+      h('p', { class: 'lead' }, 'A pet or animal friend follows you through every sector.'),
+      field('Companion', chooser(PETS.map(([n, d]) => [n, n, d]), v => v === S.pet, v => set({ pet: v }))),
+      S.pet !== 'None' ? field('Companion name', h('input', { type: 'text', id: 'petName', maxlength: 16, value: S.petName, on: { input: e => set({ petName: e.target.value }, false) } })) : null,
+    ];
+  },
+  review() {
+    const st = stats(), img = h('img', { src: cv.toDataURL(), alt: 'Your avatar' });
+    const o = S.outfit;
+    const wear = [o.headwear, o.top, o.outer, o.bottoms, o.shoes, o.gloves, o.accessory].filter(x => x !== 'None').join(', ');
+    const rows = [
+      ['Race', race().name], ['Class', `${cls().name} · ${S.sub}`], ['Powers', S.powers.join(' + ') || 'None chosen'],
+      ['Speed', `${S.speed}/10 · ${speedMs()} m/s`], ['Age', ageLabel()], ['Height', heightLabel(S.height)], ['Weight', weightLabel(S.weight)],
+      ['Skin', SKIN_NAMES[S.skin]], ['Eyes', `${EYE_NAMES[S.eyeColor]}, ${S.eyeShape.toLowerCase()}`], ['Hair', `${HAIR_NAMES[S.hairColor]} ${S.hairStyle.toLowerCase()}`],
+      ['Wearing', wear], ['Weapons', S.weapons.join(', ') || 'Unarmed'], ['Magic items', S.items.join(', ') || 'None'], ['Companion', S.pet === 'None' ? 'None' : `${S.petName || 'Unnamed'} the ${S.pet}`],
+      ['Stats', Object.entries(st).map(([k, v]) => `${k} ${v}`).join(' · ')],
+    ];
+    const sheet = `OASIS AVATAR · ID ${oasisId()}\nName: ${S.name}\n` + rows.map(([k, v]) => `${k}: ${v}`).join('\n') + `\nLevel 1 · Coins 0 · Keys: none yet`;
+    const ready = S.powers.length === 2 && S.name.trim();
+    return [
+      h('h2', {}, 'Avatar ID card'),
+      h('div', { class: 'idcard' }, img,
+        h('div', {}, h('h3', {}, S.name), h('div', { class: 'rig-id' }, `OASIS ID ${oasisId()} · LVL 1 · 0 coins`),
+          h('dl', { class: 'kv' }, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)])),
+          h('div', { class: 'keys' }, h('span', {}, 'Copper key'), h('span', {}, 'Jade key'), h('span', {}, 'Crystal key')))),
+      !ready ? h('p', { class: 'note warn' }, 'Pick two powers before you log in.') : null,
+      field('Character sheet', h('textarea', { id: 'sheet', readonly: true }, sheet)),
+      h('div', { class: 'top-actions' },
+        h('button', { class: 'btn primary', type: 'button', disabled: !ready, on: { click: () => toast(`${S.name} is ready to log in. Saved in this browser.`) } }, 'Log in to the OASIS'),
+        h('button', { class: 'btn', type: 'button', on: { click: () => copy(sheet) } }, 'Copy character sheet')),
+    ];
+  },
+};
+const ageLabel = () => `${S.age} yrs`;
+const speedLabel = () => `${S.speed}/10 · ${speedMs()} m/s`;
+
+function renderTabs() {
+  $('tabs').replaceChildren(...TABS.map(([id, label], i) =>
+    h('button', { class: 'tab', role: 'tab', type: 'button', 'aria-selected': String(S.tab === id), on: { click: () => { S.tab = id; save(); renderTabs(); renderPane(); } } },
+      h('span', { class: 'n' }, String(i + 1).padStart(2, '0')), label)));
+}
+function renderPane() {
+  const i = TABS.findIndex(t => t[0] === S.tab);
+  const nav = h('div', { class: 'pane-nav' },
+    i > 0 ? h('button', { class: 'btn', type: 'button', on: { click: () => go(i - 1) } }, '← ' + TABS[i - 1][1]) : h('span'),
+    i < TABS.length - 1 ? h('button', { class: 'btn primary', type: 'button', on: { click: () => go(i + 1) } }, TABS[i + 1][1] + ' →') : h('span'));
+  $('pane').replaceChildren(...PANES[S.tab]().filter(Boolean), nav);
+}
+function go(i) { S.tab = TABS[i][0]; save(); renderTabs(); renderPane(); $('tabs').children[i].scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+
+function updateRig() {
+  $('rig-name').textContent = S.name || 'Unnamed';
+  $('rig-id').textContent = `ID ${oasisId()}`;
+  $('rig-sub').textContent = `${race().name} ${cls().name} · ${S.sub} · ${S.age} yrs`;
+  $('rig-chips').replaceChildren(...S.powers.map(p => h('span', { class: 'chip power' }, p)),
+    ...S.weapons.map(w => h('span', { class: 'chip' }, w)),
+    ...S.items.map(w => h('span', { class: 'chip item' }, w)),
+    ...(S.pet !== 'None' ? [h('span', { class: 'chip' }, `${S.petName || 'Pet'} · ${S.pet}`)] : []));
+  const st = stats();
+  $('rig-stats').replaceChildren(...Object.entries(st).flatMap(([k, v]) => [
+    h('span', { class: 'lbl' }, k), h('div', { class: 'bar' }, h('i', { style: `width:${v / 15 * 100}%` })), h('span', { class: 'num' }, String(v))]));
+  $('rig-vitals').replaceChildren(
+    h('span', {}, 'HP ', h('b', {}, String(50 + st.VIT * 10))),
+    h('span', {}, 'MANA ', h('b', {}, String(30 + st.INT * 8))),
+    h('span', {}, 'SPD ', h('b', {}, speedMs() + ' m/s')));
+  if (S.tab === 'review') { const img = document.querySelector('.idcard img'); if (img) img.src = cv.toDataURL(); }
+  renderTabs();
+}
+
+function randomize() {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const c = pick(CLASSES);
+  const shuffled = POWERS.map(p => p[0]).sort(() => Math.random() - 0.5);
+  const names = ['Art3mis', 'Aech', 'Daito', 'Shoto', 'Nova', 'Pixel', 'Glitch', 'Rook', 'Kaiju', 'Vex', 'Byte', 'Zephyr', 'Halcyon', 'Echo'];
+  const outfit = {}; for (const k in OUTFIT) outfit[k] = pick(OUTFIT[k].items);
+  const r = pick(RACES).id;
+  Object.assign(S, {
+    name: pick(names), age: 16 + Math.floor(Math.random() * (r === 'elf' ? 250 : 50)), race: r, cls: c.id, sub: pick(c.subs)[0],
+    powers: shuffled.slice(0, 2), speed: 1 + Math.floor(Math.random() * 10),
+    height: r === 'dwarf' || r === 'halfling' || r === 'gnome' ? 105 + Math.floor(Math.random() * 30) : 150 + Math.floor(Math.random() * 55),
+    weight: 45 + Math.floor(Math.random() * 70), skin: Math.floor(Math.random() * SKIN.length),
+    hairStyle: pick(HAIR_STYLES), hairColor: Math.floor(Math.random() * HAIR_COLORS.length),
+    eyeColor: Math.floor(Math.random() * EYE_COLORS.length), eyeShape: pick(EYE_SHAPES)[0], outfit,
+    topColor: Math.floor(Math.random() * CLOTH_COLORS.length), outerColor: Math.floor(Math.random() * CLOTH_COLORS.length), bottomColor: Math.floor(Math.random() * CLOTH_COLORS.length),
+    weapons: WEAPONS.map(w => w[0]).sort(() => Math.random() - 0.5).slice(0, 1 + Math.floor(Math.random() * 2)),
+    items: MAGIC_ITEMS.map(w => w[0]).sort(() => Math.random() - 0.5).slice(0, 1 + Math.floor(Math.random() * 3)),
+    pet: pick(PETS)[0], petName: pick(['Max', 'Bit', 'Sprocket', 'Nugget', 'Ziggy', 'Luna', 'Mochi']),
+  });
+  save(); updateRig(); renderPane();
+}
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+function copy(text) {
+  const done = () => toast('Character sheet copied');
+  try { navigator.clipboard.writeText(text).then(done, () => { $('sheet').select(); toast('Press Ctrl/Cmd+C to copy'); }); }
+  catch (e) { $('sheet').select(); toast('Press Ctrl/Cmd+C to copy'); }
+}
+
+function start(seed) {
+  load(seed);
+  $('randomize').addEventListener('click', randomize);
+  $('reset').addEventListener('click', () => { S = structuredClone(DEFAULT); save(); updateRig(); renderPane(); toast('Started over'); });
+  updateRig(); renderPane();
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+  window.claude?.hot?.snapshot?.(() => S);
+}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
