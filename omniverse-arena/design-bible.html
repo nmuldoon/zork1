@@ -1,0 +1,620 @@
+<title>Omniverse Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;500;600;700&family=VT323&display=swap">
+<style>
+/* Layout: arcade-cabinet marquee hero, then a single column "design bible" with sector-coloured section stripes. Deliberate single dark world (a CRT screen). */
+:root{
+  color-scheme: dark;
+  --void:#0b0a1f;        /* page ground: deep indigo, not black */
+  --panel:#15133a;
+  --panel-2:#1d1a4d;
+  --line:#2f2b6b;
+  --ink:#ecebff;
+  --muted:#a6a3d6;
+  --arcade:#ff4fa3;      /* 80s arcade sector */
+  --fantasy:#ffc24a;     /* fantasy magic sector */
+  --cyber:#3fe0ff;       /* cyberpunk sector */
+  --pixel:#8cff5a;       /* retro pixel sector */
+  --null:#6b6890;
+  --f-display:"Bungee", "Impact", "Arial Black", sans-serif;
+  --f-body:"Barlow", "Segoe UI", system-ui, sans-serif;
+  --f-term:"VT323", "Courier New", ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
+a{color:var(--cyber)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--fantasy);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;line-height:1.1;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.7rem,4vw,2.4rem)}
+h3{font-size:1.1rem;letter-spacing:.02em}
+p{margin:0}
+.label{font-family:var(--f-term);font-size:1.25rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* ticker */
+.ticker{background:var(--panel);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;font-family:var(--f-term);font-size:1.25rem;color:var(--fantasy)}
+.ticker span{display:inline-block;padding:6px 0;animation:scroll 38s linear infinite;padding-left:100%}
+@keyframes scroll{to{transform:translateX(-100%)}}
+
+/* hero */
+.hero{padding-block:56px 40px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);pointer-events:none}
+.hero h1{font-size:clamp(2.6rem,10vw,6.2rem);letter-spacing:.01em}
+.hero h1 .o{color:var(--arcade)} .hero h1 .m{color:var(--fantasy)} .hero h1 .n{color:var(--cyber)} .hero h1 .i{color:var(--pixel)}
+.hero p.lede{max-width:62ch;margin-top:18px;font-size:1.2rem;color:var(--muted)}
+.sectors{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:32px}
+.sector{border:2px solid currentColor;padding:14px;border-radius:4px;background:var(--panel)}
+.sector b{display:block;font-family:var(--f-display);font-weight:400;font-size:1rem}
+.sector small{color:var(--muted);font-size:.9rem}
+.s-arcade{color:var(--arcade)} .s-fantasy{color:var(--fantasy)} .s-cyber{color:var(--cyber)} .s-pixel{color:var(--pixel)}
+.loop{margin-top:28px;font-family:var(--f-term);font-size:1.35rem;color:var(--ink);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.loop i{font-style:normal;color:var(--muted)}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(11,10,31,.92);backdrop-filter:blur(6px);border-block:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:4px 18px;flex-wrap:wrap;padding-block:10px}
+nav.toc a{font-family:var(--f-term);font-size:1.2rem;text-decoration:none;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+nav.toc a:hover{color:var(--ink)}
+
+section{padding-block:56px;border-bottom:1px solid var(--line)}
+section .head{display:grid;gap:8px;margin-bottom:28px;padding-left:16px;border-left:6px solid var(--accent,var(--cyber))}
+section .head p{color:var(--muted);max-width:62ch}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:grid;gap:10px;align-content:start;min-width:0}
+.card ul{margin:0;padding-left:18px;color:var(--muted)}
+.card ul li{margin-block:4px}
+.card ul b{color:var(--ink);font-weight:600}
+.tag{font-family:var(--f-term);font-size:1.15rem;color:var(--accent,var(--cyber))}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.98rem}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-term);font-size:1.2rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+
+/* ring phases */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.phase{padding:18px;display:grid;gap:6px;min-width:0}
+.phase:nth-child(1){background:var(--panel-2)}
+.phase:nth-child(2){background:repeating-linear-gradient(45deg,var(--panel) 0 6px,var(--panel-2) 6px 12px)}
+.phase:nth-child(3){background:var(--void);border-left:1px solid var(--line)}
+.phase p{color:var(--muted);font-size:.95rem}
+
+/* death mode tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.tabs button{font-family:var(--f-display);font-size:.95rem;background:var(--panel);color:var(--muted);border:2px solid var(--line);padding:10px 16px;border-radius:4px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--void);background:var(--accent);border-color:var(--accent)}
+.mode{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.choice{border:2px dashed var(--line);border-radius:6px;padding:16px;display:grid;gap:6px}
+.choice b{font-family:var(--f-term);font-size:1.35rem;font-weight:400;color:var(--accent)}
+.choice p{color:var(--muted)}
+
+/* gates */
+.gates{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));counter-reset:g}
+.gate{border-radius:6px;padding:20px;background:var(--panel);border-top:6px solid var(--k);display:grid;gap:10px;align-content:start}
+.gate .k{font-family:var(--f-term);font-size:1.3rem;color:var(--k)}
+.gate ul{margin:0;padding-left:18px;color:var(--muted)}
+.final{margin-top:16px;padding:20px;border:2px solid var(--fantasy);border-radius:6px;background:linear-gradient(90deg,rgba(255,194,74,.12),transparent);display:grid;gap:6px}
+.final p{color:var(--muted)}
+
+/* scoreboard */
+.board{font-family:var(--f-term);font-size:1.3rem;background:#05040f;border:2px solid var(--line);border-radius:6px;padding:18px 20px;display:grid;gap:4px;color:var(--pixel)}
+.board .row{display:grid;grid-template-columns:3ch 1fr auto;gap:12px;font-variant-numeric:tabular-nums}
+.board .note{color:var(--muted);font-size:1.05rem;margin-top:8px}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+.split > *{min-width:0}
+
+.t-common{--t:#b8b6cf} .t-uncommon{--t:#5fe08a} .t-rare{--t:#4aa8ff} .t-epic{--t:#b47bff} .t-legendary{--t:#ffc24a} .t-mythic{--t:#ff5fd2}
+.tierdot{display:inline-block;width:14px;height:14px;background:var(--t);margin-right:8px;vertical-align:-2px}
+.t-common .tierdot{border-radius:50%} .t-rare .tierdot{transform:rotate(45deg) scale(.85)} .t-epic .tierdot{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.t-legendary .tierdot{clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.t-mythic .tierdot{background:linear-gradient(90deg,var(--arcade),var(--fantasy),var(--pixel),var(--cyber))}
+.hotbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;max-width:620px}
+.slot{aspect-ratio:1;border:2px solid var(--t,var(--line));background:var(--panel);border-radius:4px;display:grid;place-items:center;font-family:var(--f-term);font-size:1rem;color:var(--muted);position:relative}
+.slot span{position:absolute;bottom:2px;right:4px;font-size:.9rem;color:var(--ink)}
+.slot.more{border-style:dashed;color:var(--ink);font-size:1.3rem}
+.loot{border-top:6px solid var(--t)}
+.loot .tag{color:var(--t)}
+.mapwrap{max-width:520px}
+.mapsvg{width:100%;height:auto;display:block;border-radius:6px}
+/* hitbox diagram */
+.hitbox svg{width:100%;height:auto;display:block}
+.hitbox figcaption{color:var(--muted);font-size:.92rem;margin-top:8px}
+
+footer{padding-block:40px;color:var(--muted);font-size:.95rem}
+footer .wrap{display:grid;gap:6px}
+
+@media (max-width:760px){
+  .sectors{grid-template-columns:repeat(2,1fr)}
+  .phases{grid-template-columns:1fr}
+  .phase:nth-child(3){border-left:0;border-top:1px solid var(--line)}
+  .split{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.ticker span{animation:none;padding-left:16px}}
+</style>
+
+<div class="ticker" aria-hidden="true"><span>GUNTER ALERT ▸ PIXELWITCH_77 has claimed the COPPER KEY (1st) ▸ SECTOR: NEON DISTRICT — UNLOADING IN 60s ▸ GUNTER ALERT ▸ CHROMEKNIGHT has claimed the COPPER KEY (2nd) ▸ DEREZ WAVE PHASE 2 — WIREFRAME ▸ EXAMPLE FEED</span></div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="label">Game design bible · v0.1</div>
+    <h1><span class="o">Omni</span><span class="m">verse</span> <span class="n">Are</span><span class="i">na</span></h1>
+    <p class="lede">A 100-player battle royale where four completely different worlds collide in one match. Bring a laser rifle to a sword fight, insure your rarest item, and hunt three keys for a second way to win.</p>
+    <div class="sectors">
+      <div class="sector s-arcade"><b>Neon Midway</b><small>80s arcade · NW</small></div>
+      <div class="sector s-fantasy"><b>Arcanum Reach</b><small>Fantasy magic · NE</small></div>
+      <div class="sector s-cyber"><b>Neo-Kowloon Grid</b><small>Cyberpunk · SE</small></div>
+      <div class="sector s-pixel"><b>The Bitlands</b><small>Retro pixel · SW</small></div>
+    </div>
+    <p style="margin-top:22px"><a href="https://claude.ai/artifact/NPr9k7nfFEDSQY7hEybapV" style="font-family:var(--f-display);font-size:1.1rem;color:var(--void);background:var(--arcade);padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">▶ Play the prototype</a></p>
+    <div class="loop" aria-label="Core loop">
+      <span>Drop</span><i>→</i><span>Loot</span><i>→</i><span>Adapt to sector</span><i>→</i><span>Outrun the Derez Wave</span><i>→</i><span>Fight or hunt keys</span><i>→</i><span>Win</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <a href="#map">Map</a><a href="#combat">Combat</a><a href="#drop">Drop-in</a><a href="#ring">Derez Wave</a><a href="#loot">Loot</a><a href="#events">Events</a><a href="#death">Death</a><a href="#keys">Key Hunt</a><a href="#avatars">Avatars</a><a href="#hub">Hub &amp; Pass</a>
+  </div>
+</nav>
+
+<main>
+<section id="map" style="--accent:var(--pixel)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">00 · Map blueprint</span>
+      <h2>Four worlds, one 8 × 8 km map</h2>
+      <p>Each 4 × 4 km quadrant is a separate digital world with its own hazard, way of moving and central landmark. Fault Lines run where the worlds collide, and the Nexus sits at the centre.</p>
+    </div>
+    <div class="mapwrap">
+      <svg class="mapsvg" viewBox="0 0 400 400" role="img" aria-label="Map layout: Neon Midway north-west, Arcanum Reach north-east, The Bitlands south-west, Neo-Kowloon Grid south-east, Nexus in the centre">
+        <rect x="0" y="0" width="200" height="200" fill="var(--arcade)" opacity=".18"/>
+        <rect x="200" y="0" width="200" height="200" fill="var(--fantasy)" opacity=".18"/>
+        <rect x="0" y="200" width="200" height="200" fill="var(--pixel)" opacity=".18"/>
+        <rect x="200" y="200" width="200" height="200" fill="var(--cyber)" opacity=".18"/>
+        <g stroke="var(--muted)" stroke-width="3" stroke-dasharray="4 6"><line x1="200" y1="0" x2="200" y2="400"/><line x1="0" y1="200" x2="400" y2="200"/></g>
+        <circle cx="200" cy="200" r="34" fill="var(--void)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="VT323, monospace" text-anchor="middle">
+          <text x="200" y="198" fill="var(--ink)" font-size="15">NEXUS</text>
+          <text x="200" y="213" fill="var(--muted)" font-size="11">Final Gate</text>
+          <text x="100" y="90" fill="var(--arcade)" font-size="20">NEON MIDWAY</text>
+          <text x="100" y="110" fill="var(--muted)" font-size="13">POI: The Cabinet</text>
+          <text x="300" y="90" fill="var(--fantasy)" font-size="20">ARCANUM REACH</text>
+          <text x="300" y="110" fill="var(--muted)" font-size="13">POI: Spire of Ascension</text>
+          <text x="100" y="300" fill="var(--pixel)" font-size="20">THE BITLANDS</text>
+          <text x="100" y="320" fill="var(--muted)" font-size="13">POI: 8-Bit Citadel</text>
+          <text x="300" y="300" fill="var(--cyber)" font-size="20">NEO-KOWLOON GRID</text>
+          <text x="300" y="320" fill="var(--muted)" font-size="13">POI: The Mainframe</text>
+        </g>
+        <rect x="1" y="1" width="398" height="398" fill="none" stroke="var(--line)" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="grid" style="margin-top:20px">
+      <div class="card" style="--accent:var(--arcade)"><span class="tag">NW · Close range</span><h3>Neon Midway</h3>
+        <ul><li><b>Look:</b> 80s arcade the size of a city. Patterned carpet streets, cabinet towers, a synthwave sunset that never sets</li>
+        <li><b>Hazard, Ghost Sweep:</b> giant ghosts patrol the maze streets. Grab a Power Pellet to turn the tables for 10s</li>
+        <li><b>Traversal:</b> driveable synthwave cars on a neon highway loop, with boost pads</li>
+        <li><b>POI, The Cabinet:</b> a skyscraper-sized arcade machine. Each floor is a playable game screen. The Copper Key race starts here</li></ul></div>
+      <div class="card" style="--accent:var(--fantasy)"><span class="tag">NE · Mid range, vertical</span><h3>Arcanum Reach</h3>
+        <ul><li><b>Look:</b> floating islands, crystal forests, castles linked by rune bridges</li>
+        <li><b>Hazard, Mana Tide:</b> waves of wild magic drop gravity low for 30s. Spells cost half, guns drift off-target</li>
+        <li><b>Traversal:</b> rideable griffins from roost points, plus wind currents between islands. Mounts can be shot down</li>
+        <li><b>POI, Spire of Ascension:</b> a giant parkour tower. Home of the Jade Key</li></ul></div>
+      <div class="card" style="--accent:var(--cyber)"><span class="tag">SE · Close quarters, vertical</span><h3>Neo-Kowloon Grid</h3>
+        <ul><li><b>Look:</b> rain-soaked stacked megacity, hologram ads, alleys ten storeys deep</li>
+        <li><b>Hazard, Data Corruption Storm:</b> roaming storm cells scramble the HUD, kill the minimap and turn drones hostile</li>
+        <li><b>Traversal:</b> grind rails along maglev lines, grapple hooks and wall-running</li>
+        <li><b>POI, The Mainframe:</b> a server tower. Capture its uplink to ping every enemy in the sector for 15s</li></ul></div>
+      <div class="card" style="--accent:var(--pixel)"><span class="tag">SW · Long range, open</span><h3>The Bitlands</h3>
+        <ul><li><b>Look:</b> flat 8-bit plains, block mountains, a four-colour sky</li>
+        <li><b>Hazard, Block Fall:</b> giant falling block shapes stack up as new cover. A completed row clears and deletes anyone standing on it</li>
+        <li><b>Traversal:</b> warp tubes between hills, bounce pads and a double jump that only works here</li>
+        <li><b>POI, 8-Bit Citadel:</b> a sprite castle that rebuilds itself every phase. The Crystal Key hunt starts here</li></ul></div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><span class="tag">Fault Lines</span><p style="color:var(--muted)">The seams between sectors are 200m blended strips: pixel blocks sticking out of castle walls, neon signs on dragon bones. They're the main crossing routes and the best ambush spots.</p></div>
+      <div class="card"><span class="tag">The Nexus</span><p style="color:var(--muted)">The centre point where all four worlds meet. The Final Gate stands here and the last Merge Zone always ends here.</p></div>
+      <div class="card"><span class="tag">Range mix</span><p style="color:var(--muted)">Each sector favours a different fight distance, so every loadout has a home: Midway and the Grid for close range, Arcanum for mid, the Bitlands for long.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="combat" style="--accent:var(--arcade)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">01 · Cross-genre balance</span>
+      <h2>Lasers vs magic vs steel</h2>
+      <p>Every weapon shares one set of hidden stats: damage per second, range, time-to-kill and one resource bar called Charge. Theme changes the look, never the power.</p>
+    </div>
+    <div class="tbl" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>Archetype</th><th>Strength</th><th>Countered by</th></tr></thead>
+        <tbody>
+          <tr><td class="s-cyber">Tech</td><td>Long range, accurate</td><td>Shields soak beams; EMP spells disable gear</td></tr>
+          <tr><td class="s-fantasy">Arcane</td><td>Area damage, curses, utility</td><td>Long cast times; interrupted by melee rush</td></tr>
+          <tr><td class="s-arcade">Steel</td><td>High burst, parries projectiles</td><td>Kited at range before it closes the gap</td></tr>
+          <tr><td class="s-pixel">Pixel</td><td>Fast, small, hard to read</td><td>Low HP; one-shot by area damage</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="tag">Sector Physics</span><h3>Home turf matters</h3><p style="color:var(--muted)">Weapons get +15% in their home sector and −15% in the opposite one. Magic glitches in Cyberpunk. Lasers fizzle in Fantasy.</p></div>
+      <div class="card"><span class="tag">Melee fairness</span><h3>Swords can win</h3><p style="color:var(--muted)">Timed parries deflect projectiles. Every melee weapon has a gap-closer. Melee hits deal the highest damage in the game.</p></div>
+      <div class="card"><span class="tag">Loadouts</span><h3>Mix any theme</h3><p style="color:var(--muted)">Carry 2–3 weapons from any sector and swap to suit the ground you're fighting on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="drop" style="--accent:var(--fantasy)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">02 · Entering the match</span>
+      <h2>Three ways to drop in</h2>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="tag">Solo</span><h3>Warp Gate Lobby</h3><ul><li>Hub with one portal per sector</li><li>Live player count on each portal</li><li>Late entry: random spawn plus a loot bonus</li></ul></div>
+      <div class="card"><span class="tag">Classic</span><h3>DeLorean Drop</h3><ul><li>A flying DeLorean, dragon or Galaga ship crosses the map</li><li>Fantasy: glide on wings</li><li>Pixel: slow 8-bit chute</li><li>Cyberpunk: jetpack boosts</li></ul></div>
+      <div class="card"><span class="tag">Squad</span><h3>Respawn Cartridge</h3><ul><li>Squad loads as one cartridge into a giant cabinet</li><li>Pick a level-select tile on the map grid</li><li>Each tile shows a loot rarity rating</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="ring" style="--accent:var(--cyber)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">03 · The closing zone</span>
+      <h2>The Derez Wave</h2>
+      <p>The map edge is Null Code: the server un-rendering itself to save processing power. Whole sectors get deleted one at a time, with a 60-second warning.</p>
+    </div>
+    <div class="phases">
+      <div class="phase"><span class="tag">Phase 1</span><h3>Lag Zone</h3><p>Frame-skip, input delay, slow damage.</p></div>
+      <div class="phase"><span class="tag">Phase 2</span><h3>Wireframe</h3><p>Textures vanish, minimap fails, damage rises.</p></div>
+      <div class="phase"><span class="tag" style="color:var(--null)">Phase 3</span><h3>Null</h3><p>Fast HP drain. "Avatar deletion imminent."</p></div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><span class="tag">Merge Zone</span><p style="color:var(--muted)">The final circle fuses the last surviving sectors: a neon city covered in dragon fire and pixel blocks.</p></div>
+      <div class="card"><span class="tag">Glitch Rifts</span><p style="color:var(--muted)">Short-lived safe pockets inside the Null that hold rare loot. High risk, high reward.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="loot" style="--accent:var(--fantasy)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">04 · Loot &amp; inventory</span>
+      <h2>Common to Mythic</h2>
+      <p>Six tiers. Each has a colour, an icon shape for colour-blind players and a pickup effect. Higher tiers add perks rather than raw damage, about +5% stats per tier, so skill still beats luck.</p>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Tier</th><th>Look on the ground</th><th>Pickup effect</th><th>Drop rate</th></tr></thead>
+        <tbody>
+          <tr class="t-common"><td><i class="tierdot"></i>Common</td><td>Flat grey, no glow</td><td>Soft click</td><td>45%</td></tr>
+          <tr class="t-uncommon"><td><i class="tierdot"></i>Uncommon</td><td>Terminal-green scanlines</td><td>Two-note beep</td><td>28%</td></tr>
+          <tr class="t-rare"><td><i class="tierdot"></i>Rare</td><td>Blue hologram shimmer</td><td>Synth chord</td><td>15%</td></tr>
+          <tr class="t-epic"><td><i class="tierdot"></i>Epic</td><td>Purple glitch particles</td><td>Glitch stutter</td><td>8%</td></tr>
+          <tr class="t-legendary"><td><i class="tierdot"></i>Legendary</td><td>Gold light beam, coins orbit it</td><td>Chiptune "high score" fanfare</td><td>3.5%</td></tr>
+          <tr class="t-mythic"><td><i class="tierdot"></i>Mythic</td><td>Colour-shifting rainbow, nearby world warps</td><td>Beam seen by players within 300m</td><td>0.5%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:36px;margin-bottom:6px">Inventory: 10 + 20 slots</h3>
+    <p style="color:var(--muted);max-width:62ch;margin-bottom:14px">Ten quick slots sit in the bottom-left corner. Tap the three dots to open 20 more. No weight limit. Mythic items never stack.</p>
+    <div class="hotbar" aria-label="Example hotbar">
+      <div class="slot t-legendary">GUN<span>1</span></div>
+      <div class="slot t-epic">SWD<span>1</span></div>
+      <div class="slot t-rare">SHD<span>1</span></div>
+      <div class="slot t-uncommon">MED<span>5</span></div>
+      <div class="slot t-common">AMO<span>90</span></div>
+      <div class="slot t-mythic">WNG<span>1</span></div>
+      <div class="slot t-rare">STR<span>2</span></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot more">···</div>
+    </div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:8px">Example loadout. The number in each slot is the stack count.</p>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><span class="tag">Quick slots</span><ul><li>Slots 1–10 map to keys 1–0 on PC and a radial wheel on controller</li><li>Only items in quick slots can be used</li></ul></div>
+      <div class="card"><span class="tag">Backpack</span><ul><li>20 extra slots behind the three dots</li><li>The game doesn't pause while it's open, so sorting mid-fight is a risk</li></ul></div>
+      <div class="card"><span class="tag">Stacking</span><ul><li>Common stacks to 99, Uncommon 20, Rare 10, Epic 5, Legendary 2</li><li>Mythic: 1 per slot, never stacks</li><li>Suggested: carry at most 2 Mythics</li></ul></div>
+    </div>
+
+    <h3 style="margin-top:36px;margin-bottom:14px">Cross-Genre Synergy Loot</h3>
+    <div class="grid">
+      <div class="card loot t-legendary"><span class="tag">Legendary · Pixel + Modern</span><h3>Retro-Gun</h3><ul><li>Assault rifle that fires 8-bit pixel bullets</li><li>Bullets bounce off walls at right angles, like an arcade shooter</li><li>Targets it kills burst into pixels</li><li><b>Catch:</b> slow, visible bullets that are easy to dodge</li></ul></div>
+      <div class="card loot t-mythic"><span class="tag">Mythic · Robot + Fairy</span><h3>Robotic-Fairy Wings</h3><ul><li>Chrome wings that leave a trail of fairy dust</li><li>Hover, glide and a 5s flight burst</li><li>The dust heals squadmates who fly through it</li><li><b>Catch:</b> overheats, and the dust trail shows where you've been</li></ul></div>
+      <div class="card loot t-epic"><span class="tag">Epic · Fantasy + Sci-fi</span><h3>Plasma Excalibur</h3><ul><li>Legendary-style sword with a plasma edge</li><li>Every successful parry stores a charge</li><li>Release 3 charges as a plasma wave</li><li><b>Catch:</b> the charge is lost if you swap weapons</li></ul></div>
+      <div class="card loot t-legendary"><span class="tag">Legendary · Magic + Arcade</span><h3>Spell Cartridge Gauntlet</h3><ul><li>Robot fist with a cartridge slot</li><li>Slot in spell cartridges found as loot to cast fireball, frost or blink</li><li>Blow on the cartridge to reload</li><li><b>Catch:</b> each cartridge takes its own inventory slot</li></ul></div>
+      <div class="card loot t-mythic"><span class="tag">Mythic · Pixel + Fantasy</span><h3>1-Up Amulet</h3><ul><li>An 8-bit heart set in an elven amulet</li><li>Revives you once, at full health, with a chiptune jingle</li><li>Works with the Copper, Jade and Crystal Key runs</li><li><b>Catch:</b> breaks on use, and its glow marks you for every enemy</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="events" style="--accent:var(--cyber)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">05 · In-match challenges</span>
+      <h2>Side quests mid-match</h2>
+      <p>Four kinds of challenge spawn during every match. Each pays out on the spot, so detours are worth the risk.</p>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="tag">Solo · Risky</span><h3>Glitch Hunts</h3>
+        <ul><li><b>What:</b> a flickering corrupted cube appears on the map</li>
+        <li><b>Clear it:</b> stand inside and hold to "debug" for 15s while corrupted clones of nearby players attack you</li>
+        <li><b>Risk:</b> a red static pillar shows your position to everyone, and corruption swaps your controls for a few seconds</li>
+        <li><b>Reward:</b> an Epic weapon plus 1 Glitch Token for the Glitch Vault</li></ul></div>
+      <div class="card"><span class="tag">Co-op · Social</span><h3>Sector Events</h3>
+        <ul><li><b>What:</b> a raid boss spawns in one sector: Ghost King (Midway), Ancient Dragon (Arcanum), Rogue AI Mech (Grid) or Block Titan (Bitlands)</li>
+        <li><b>Truce Dome:</b> players inside can't hurt each other while the boss lives</li>
+        <li><b>After the kill:</b> a 10s countdown, then the truce ends</li>
+        <li><b>Reward:</b> every fighter gets a Legendary item. Top damage gets a Mythic roll. A "Raid Buddy" friend prompt pops up</li></ul></div>
+      <div class="card"><span class="tag">Anyone · Quick</span><h3>Mini Speed Challenges</h3>
+        <ul><li><b>What:</b> small timed trials anyone can start: the neon car loop in 45s, an island parkour run, a grind-rail sprint or a block-jump climb</li>
+        <li><b>Beat the timer:</b> a Rare item or a shield battery</li>
+        <li><b>Gold time:</b> a Legendary item plus 2× XP for 5 minutes</li>
+        <li><b>Fastest in the match:</b> your ghost replay haunts the course next match</li></ul></div>
+      <div class="card"><span class="tag">Everyone vs #1</span><h3>Bounty Protocols</h3>
+        <ul><li><b>What:</b> the top real player on the match leaderboard gets a bounty marker</li>
+        <li><b>Hunters:</b> the player who takes them out gets their bounty coins, a Legendary drop and 3× XP for the rest of the match</li>
+        <li><b>The target:</b> survive 3 minutes with the bounty and earn a free shield battery and a Bounty Survivor badge</li></ul></div>
+    </div>
+
+    <div class="split" style="margin-top:20px">
+      <div class="card">
+        <span class="tag">Safe Zones</span>
+        <h3>Rest stops, with limits</h3>
+        <ul>
+          <li>No damage inside. Heal, sort inventory, chat and meet people</li>
+          <li><b>Suggested limit:</b> 60s per visit, then a 2-minute cooldown</li>
+          <li>Safe Zones shut down when the Derez Wave reaches them</li>
+          <li>The bounty target can enter, but the 60s limit still applies</li>
+        </ul>
+      </div>
+      <div class="board" role="img" aria-label="Example match leaderboard with a Creator slot pinned above the ranks">
+        <div style="color:var(--arcade)">★ THE ARCHITECT · CREATOR · GOD MODE</div>
+        <div style="color:var(--muted);font-size:1.05rem">Sits above all ranks. Cannot die. 1st place is open to players.</div>
+        <div style="color:var(--fantasy);margin-top:6px">MATCH LEADERBOARD</div>
+        <div class="row"><span>01</span><span>NEONRONIN ◎ BOUNTY</span><span>4,820</span></div>
+        <div class="row"><span>02</span><span>PIXELWITCH_77</span><span>4,105</span></div>
+        <div class="row"><span>03</span><span>CHROMEKNIGHT</span><span>3,770</span></div>
+        <div class="note">Example names and points. Points come from kills, challenges and survival time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="death" style="--accent:var(--arcade)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">06 · Death &amp; progression</span>
+      <h2>What happens when you burst into coins</h2>
+      <p>Three modes, from brutal to forgiving. Pick one to see what a player chooses on death.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Death modes">
+      <button role="tab" id="tab-hard" aria-selected="false" aria-controls="m-hard" style="--accent:var(--arcade)">Game Over</button>
+      <button role="tab" id="tab-casual" aria-selected="false" aria-controls="m-casual" style="--accent:var(--pixel)">Desync</button>
+      <button role="tab" id="tab-vault" aria-selected="true" aria-controls="m-vault" style="--accent:var(--fantasy)">Glitch Vault</button>
+    </div>
+    <div class="mode" id="m-hard" role="tabpanel" aria-labelledby="tab-hard" style="--accent:var(--arcade)" hidden>
+      <div class="choice"><b>Hardcore · no choice</b><p>Drop everything as a coin pile. Profile resets to Level 1.</p></div>
+      <div class="choice"><b>Softened by</b><p>Hall of Fame entry, a legacy title ("Fallen Gunter – Lvl 87") and a small rebirth perk.</p></div>
+      <div class="choice"><b>Best for</b><p>Seasonal "Ready Player One" event mode and ranked play.</p></div>
+    </div>
+    <div class="mode" id="m-casual" role="tabpanel" aria-labelledby="tab-casual" style="--accent:var(--pixel)" hidden>
+      <div class="choice"><b>Restart</b><p>Queue a fresh match. Cosmetics and account level are kept.</p></div>
+      <div class="choice"><b>Continue</b><p>Respawn at the map edge with starter gear, once per match, not after Ring Phase 3. You glow as a "glitched" target.</p></div>
+      <div class="choice"><b>Best for</b><p>New players (first ~10 hours) and the casual playlist.</p></div>
+    </div>
+    <div class="mode" id="m-vault" role="tabpanel" aria-labelledby="tab-vault" style="--accent:var(--fantasy)">
+      <div class="choice"><b>Before the match</b><p>Insure 1–2 items with Glitch Tokens. Slot 1 is free. Insured items glow, so enemies know you carry something valuable.</p></div>
+      <div class="choice"><b>Total Restart</b><p>Profile resets to Level 1, but your insured items come back to you.</p></div>
+      <div class="choice"><b>Redemption Run</b><p>Continue as a blank Default Avatar. Reach the top 10 and you recover your full profile.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="keys" style="--accent:var(--fantasy)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">07 · Alternative win condition</span>
+      <h2>The Easter Egg Hunt</h2>
+      <p>Three gates, three keys, in strict order. You can't enter a gate without the key before it. Every player who beats a challenge earns that key, one per person.</p>
+    </div>
+    <div class="gates">
+      <div class="gate" style="--k:#d98a4e"><span class="k">Gate 1 · Copper Key</span><h3>The Race</h3><ul><li>Beat elite NPC racers across all four sectors</li><li>Any NPC finishes first: no key</li><li>Other players can shoot you mid-race</li><li>Opens after Ring Phase 1</li></ul></div>
+      <div class="gate" style="--k:#4fd6a0"><span class="k">Gate 2 · Jade Key</span><h3>The Tower</h3><ul><li>Climb a giant parkour tower full of traps</li><li>PvP allowed: knock rivals off</li><li>Key respawns 60s after each claim</li><li>Top platform crumbles after 10s</li></ul></div>
+      <div class="gate" style="--k:#9fd8ff"><span class="k">Gate 3 · Crystal Key</span><h3>The Hunt</h3><ul><li>Find 10 hidden items in 5 minutes</li><li>Item spots randomise every attempt</li><li>Miss one: fail, cooldown, retry</li><li>Opens after Ring Phase 3</li></ul></div>
+    </div>
+    <div class="final">
+      <h3 style="color:var(--fantasy)">The Final Gate</h3>
+      <p>Hold all three keys to open it. The first player through wins the match instantly. Last player standing still wins too.</p>
+    </div>
+
+    <div class="split" style="margin-top:28px">
+      <div class="card">
+        <span class="tag">Alerts</span>
+        <h3>Only the first three are famous</h3>
+        <ul>
+          <li><b>1st, 2nd and 3rd</b> holders of each key trigger a global broadcast and land in every player's inbox</li>
+          <li>A key-coloured light beam shoots from the gate, visible map-wide</li>
+          <li>Music cuts to a 3-second chiptune fanfare</li>
+          <li>After the 3rd: no alerts, just a quiet counter on the Scoreboard</li>
+          <li>A Final Gate win always triggers an alert</li>
+        </ul>
+      </div>
+      <div class="board" role="img" aria-label="Example scoreboard">
+        <div style="color:var(--fantasy)">HIGH SCORES · COPPER KEY</div>
+        <div class="row"><span>01</span><span>PIXELWITCH_77</span><span>12,450</span></div>
+        <div class="row"><span>02</span><span>CHROMEKNIGHT</span><span>11,980</span></div>
+        <div class="row"><span>03</span><span>NEONRONIN</span><span>10,105</span></div>
+        <div class="row" style="color:var(--muted)"><span>··</span><span>Keys claimed</span><span>1,284</span></div>
+        <div class="note">Example names and numbers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="avatars" style="--accent:var(--cyber)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">08 · Character creator</span>
+      <h2>Any body, same fair fight</h2>
+      <p>A cyberpunk robot body with a wizard hat and 8-bit wings is fine. The look is free; the hitbox is fixed.</p>
+    </div>
+    <div class="split">
+      <figure class="hitbox card" style="margin:0">
+        <svg viewBox="0 0 420 240" role="img" aria-label="A mech, a human and a small anime avatar all sharing the same capsule hitbox">
+          <line x1="10" y1="220" x2="410" y2="220" stroke="var(--line)" stroke-width="2"/>
+          <!-- capsules -->
+          <g fill="none" stroke="var(--pixel)" stroke-width="2" stroke-dasharray="6 4">
+            <rect x="50" y="40" width="60" height="180" rx="30"/>
+            <rect x="180" y="40" width="60" height="180" rx="30"/>
+            <rect x="310" y="40" width="60" height="180" rx="30"/>
+          </g>
+          <!-- mech: visually larger, clamped -->
+          <rect x="40" y="58" width="80" height="120" rx="8" fill="var(--cyber)" opacity=".55"/>
+          <rect x="60" y="34" width="40" height="30" rx="4" fill="var(--cyber)" opacity=".8"/>
+          <rect x="48" y="178" width="22" height="42" fill="var(--cyber)" opacity=".55"/>
+          <rect x="90" y="178" width="22" height="42" fill="var(--cyber)" opacity=".55"/>
+          <!-- human with wizard hat -->
+          <circle cx="210" cy="66" r="16" fill="var(--fantasy)" opacity=".85"/>
+          <polygon points="192,56 228,56 210,20" fill="var(--fantasy)"/>
+          <rect x="194" y="84" width="32" height="80" rx="6" fill="var(--fantasy)" opacity=".55"/>
+          <rect x="196" y="164" width="12" height="56" fill="var(--fantasy)" opacity=".55"/>
+          <rect x="212" y="164" width="12" height="56" fill="var(--fantasy)" opacity=".55"/>
+          <!-- small anime avatar scaled up; pixel wings -->
+          <rect x="282" y="90" width="24" height="12" fill="var(--pixel)" opacity=".7"/><rect x="290" y="78" width="16" height="12" fill="var(--pixel)" opacity=".7"/>
+          <rect x="374" y="90" width="24" height="12" fill="var(--pixel)" opacity=".7"/><rect x="374" y="78" width="16" height="12" fill="var(--pixel)" opacity=".7"/>
+          <circle cx="340" cy="72" r="24" fill="var(--arcade)" opacity=".85"/>
+          <rect x="324" y="98" width="32" height="70" rx="6" fill="var(--arcade)" opacity=".55"/>
+          <rect x="326" y="168" width="12" height="52" fill="var(--arcade)" opacity=".55"/>
+          <rect x="342" y="168" width="12" height="52" fill="var(--arcade)" opacity=".55"/>
+          <!-- head zone line -->
+          <line x1="10" y1="88" x2="410" y2="88" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4"/>
+          <text x="12" y="82" fill="var(--muted)" font-size="11" font-family="VT323, monospace">HEAD ZONE</text>
+          <g fill="var(--ink)" font-size="14" font-family="VT323, monospace" text-anchor="middle">
+            <text x="80" y="238">MECH</text><text x="210" y="238">WIZARD</text><text x="340" y="238">ANIME</text>
+          </g>
+        </svg>
+        <figcaption>Dashed capsule: the same ~1.8m hitbox for everyone. Visuals clamp to 85–115% height and may overhang by about 20% before turning semi-transparent in combat.</figcaption>
+      </figure>
+      <div class="card">
+        <span class="tag">Fairness rules</span>
+        <ul>
+          <li><b>One camera height</b> so tall avatars can't peek over cover</li>
+          <li><b>Brightness floor</b> and rim light so dark skins can't hide</li>
+          <li><b>Same footstep range</b> for every body</li>
+          <li><b>Ranked lock</b> option: standard outline on everyone</li>
+          <li><b>Hit effects follow the hitbox:</b> a shot that only clips an oversized shoulder shows a miss spark</li>
+          <li><b>Certification test:</b> every new cosmetic is checked against size, brightness and silhouette limits before release</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top:36px;margin-bottom:14px">Modular Customization System</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Layer</th><th>Controls</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Core Rig</td><td>Skeleton type</td><td>Biped, Heavy Biped, Quadruped, Floater, Serpentine</td></tr>
+          <tr><td>2 · Body Frame</td><td>Base model per zone</td><td>Chrome torso + pixel legs</td></tr>
+          <tr><td>3 · Visual Skin</td><td>Materials and shaders</td><td>Neon wireframe, rusted metal</td></tr>
+          <tr><td>4 · Attachments</td><td>Items on mount points</td><td>Wizard hat, 8-bit wings</td></tr>
+          <tr><td>5 · Motion Set</td><td>Walk, idle, sprint style</td><td>Mechanical stomp, floaty glide</td></tr>
+          <tr><td>6 · Haptic FX</td><td>Rumble and trigger feel</td><td>Heavy thud steps, spell buzz</td></tr>
+          <tr><td>7 · Audio Kit</td><td>Voice and sound accents</td><td>Robot vox, chiptune jump</td></tr>
+          <tr><td>8 · Trail / Aura</td><td>Particles and death burst</td><td>Coins, pixels, magic dust</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card"><span class="tag">Universal Emotes · step 1</span><h3>Animate once</h3><p style="color:var(--muted)">Every emote is built on one master skeleton, then auto-retargeted to each Core Rig.</p></div>
+      <div class="card"><span class="tag">Step 2</span><h3>Per-body variants</h3><p style="color:var(--muted)">A wave is an arm wave on a human, a paw in the air on a beast and a spin of particles on a floating orb.</p></div>
+      <div class="card"><span class="tag">Step 3</span><h3>Style filter</h3><p style="color:var(--muted)">Same emote, different timing: choppy 12fps for Pixel, servo stops for Robot, flowing trails for Fantasy.</p></div>
+    </div>
+
+    <h3 style="margin-top:36px;margin-bottom:6px">World Filter</h3>
+    <p style="color:var(--muted);max-width:62ch;margin-bottom:14px">Every emote picks up the style of the sector you're standing in. One animation file, four looks.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Sector</th><th>Animation</th><th>Effects</th><th>Sound</th></tr></thead>
+        <tbody>
+          <tr><td class="s-arcade">Neon Midway</td><td>Bouncy squash-and-stretch</td><td>Neon outlines, "+100" pop-ups</td><td>Coin drops, cabinet blips</td></tr>
+          <tr><td class="s-fantasy">Arcanum Reach</td><td>Smooth follow-through</td><td>Sparkles, rune glow</td><td>Chimes, harp</td></tr>
+          <tr><td class="s-cyber">Neo-Kowloon Grid</td><td>Sharp mechanical stops</td><td>Hologram flicker, glitch lines</td><td>Synth hits</td></tr>
+          <tr><td class="s-pixel">The Bitlands</td><td>Choppy 12fps</td><td>Chunky pixel blocks</td><td>8-bit chiptune</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid" style="margin-top:20px">
+      <div class="card"><span class="tag">Player setting</span><h3>Avatar, World or Blend</h3><p style="color:var(--muted)">World first is the default. Avatar first keeps your outfit's style everywhere. Blend uses your animation with the world's effects.</p></div>
+      <div class="card"><span class="tag">Merge Zone</span><h3>Style switches mid-move</h3><p style="color:var(--muted)">Start a dance in the Grid, step into the Bitlands, and the second half plays in 8-bit.</p></div>
+      <div class="card"><span class="tag">Unlocks</span><h3>World-exclusive emotes</h3><p style="color:var(--muted)">Each sector hides 1–2 emotes, like "Insert Coin" in Midway or "Summon Familiar" in Arcanum. Once earned they work everywhere.</p></div>
+      <div class="card"><span class="tag">Fairness</span><h3>Emote budget</h3><p style="color:var(--muted)">Every emote has a fixed length and screen footprint, so no world's version lasts longer or blocks more view.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="hub" style="--accent:var(--arcade)">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">09 · Between matches</span>
+      <h2>The hub, progression and the Gunter Pass</h2>
+      <p>XP from matches and challenges raises your account level from 1 to 100. Every level unlocks something across three tracks. Unlocks add choice, not raw power, so new players can still win.</p>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="tag">Track A</span><h3>Chat Room customisation</h3><ul><li>Your own private room in the hub, starting as a bare basement</li><li>Unlock furniture, arcade cabinets, jukebox tracks and wall screens</li><li>Higher levels raise the room's guest limit, from 4 to 16</li><li>Trophy shelf shows your keys, raid kills and badges</li></ul></div>
+      <div class="card"><span class="tag">Track B</span><h3>Character upgrades</h3><ul><li>New Core Rigs, Body Frames, emotes and Motion Sets</li><li>Perk slots that let you choose a playstyle, such as faster healing <b>or</b> faster reload</li><li>Perks are sidegrades: picking one means giving up another</li></ul></div>
+      <div class="card"><span class="tag">Track C</span><h3>Weapon &amp; item unlocks</h3><ul><li>Unlock new starting weapons and weapon skins</li><li>Unlocked starters are all equal in power to the default</li><li>Higher-tier loot is still found only in matches</li></ul></div>
+    </div>
+
+    <h3 style="margin-top:36px;margin-bottom:6px">Season Top 30</h3>
+    <p style="color:var(--muted);max-width:62ch;margin-bottom:14px">Finish the season in the top 30 of the leaderboard to earn perks for the next season. Below 30th, no perks. The Architect sits above the board and doesn't take a spot.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Rank</th><th>Friday gift</th><th>Avatar slots</th><th>Creator privileges</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--fantasy)">1st–3rd</td><td>Legendary cosmetic crate</td><td>5 saved avatars</td><td>Early access to new creator parts, name on the hub statue</td></tr>
+          <tr><td style="color:var(--cyber)">4th–10th</td><td>Epic cosmetic crate</td><td>4 saved avatars</td><td>Exclusive colour palette in the creator</td></tr>
+          <tr><td style="color:var(--pixel)">11th–30th</td><td>Rare cosmetic crate</td><td>3 saved avatars</td><td>Top 30 profile banner</td></tr>
+          <tr><td style="color:var(--muted)">31st and below</td><td>None</td><td>1 avatar (default)</td><td>None</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:8px">Saved avatars hold a full outfit each. Swap between them in the lobby before a match.</p>
+
+    <h3 style="margin-top:36px;margin-bottom:6px">Gunter Pass · Season 1: Insert Coin</h3>
+    <p style="color:var(--muted);max-width:62ch;margin-bottom:14px">The OASIS has been hacked back to 1985. 100 tiers, with a free track and a premium track. Every reward is cosmetic, so the pass never decides a fight.</p>
+    <div class="grid">
+      <div class="card loot t-epic"><span class="tag">Tier 25 · Vehicle skin</span><h3>Time-Racer '88</h3><ul><li>A gull-wing sports car with a glowing flux core</li><li>Use it on the Midway highway and as your drop vehicle</li><li>Leaves twin fire trails when it boosts</li></ul></div>
+      <div class="card loot t-legendary"><span class="tag">Tier 50 · Emote</span><h3>Kaiju Showdown</h3><ul><li>A giant robot rises behind you and wrestles a skyscraper-sized lizard</li><li>Plays in the hub and after a win</li><li>The World Filter turns it 8-bit in the Bitlands</li></ul></div>
+      <div class="card loot t-mythic"><span class="tag">Tier 100 · Finale</span><h3>The Golden Quarter</h3><ul><li>Spinning gold coin that hovers over your shoulder</li><li>Exclusive death effect: you burst into gold quarters</li><li>"Extra Life" title and a playable cabinet for your Chat Room</li></ul></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="label">Omniverse Arena · design bible draft</span>
+    <span>Concept inspired by the OASIS from Ready Player One. Names on this page are examples.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.tabs [role="tab"]');
+  function select(t){
+    tabs.forEach(function(b){
+      var on = b === t;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(b.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ select(b); }); });
+})();
+</script>
