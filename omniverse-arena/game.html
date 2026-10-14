@@ -436,6 +436,78 @@ const ARCH_KIT=['blade','chalk','dreamgun','hammer','bubble','clock','lantern','
 const RAINBOW=[0xff4fa3,0xffc24a,0x8cff5a,0x3fe0ff,0xb47bff];
 const POOLS=[['pistol','brick'],['carbine','med','shield','apprentice','draught','elixir','lollipop','flute'],['rifle','shield','vision','dragonbreath','sunbox','lilypad','ivy','mists','nightshade'],['staff','sword','journeys','toxins','invis','bonefire','pixie','dragonfang'],['retro','star','weather','rays','cloudsage','moonlight','reaper','wraith','emberwake'],['wings','oneup','stonegate','crown']];
 const TROPHIES=['sprout','cosmic','fae','grimoire','phoenix'];
+
+// ---------- Herbals & Dream Relics, Enchanted Accessories, Mysterious Curios ----------
+// [name, tier, use-effect or null, passive mods or null, reuse seconds]
+const HERBALS=[
+ ['Bitterleaf',0,{heal:10}],['Moonpetal',1,{shield:15}],['Dreammoss',1,{regen:8}],['Starbloom',1,{reveal:6}],['Spiritroot',1,{heal:15,shield:5}],
+ ['Mistveil Herb',2,{invis:4}],['Glowcap',0,{reveal:4}],['Whisperbloom',1,{sugar:10}],['Farwheat',0,{heal:8}],['Daydream Lily',1,{jumpb:8}],
+ ['Shadowfern',2,{invis:5}],['Lightspike',1,{boost:5}],['Soulsage',1,{regen:10}],['Silverthistle',1,{shield:20}],['Dreamshade',2,{invis:4,regen:4}],
+ ['Eternal Lotus',3,{heal:40,regen:10}],['Crystal Basil',1,{mana:1}],['Aurora Herb',2,{reveal:10}],['Emberbloom',2,{rage:8}],['Dewmorrow',0,{heal:12}],
+ ['Starlit Fern',1,{jumpb:10}],['Verdant Mistle',1,{heal:15}],['Heartleaf',1,{heal:20}],['Mana Mint',1,{mana:1}],['Everbark',2,{shield:30}],
+ ['Goldclove',1,{gems:10}],['Sylphseed',2,{boost:8,jumpb:8}],['Nightwhisper',2,{invis:6}],['Sunroot',1,{heal:12,boost:4}],['Cloudthistle',1,{jumpb:12}],
+ ['Stormvine',2,{boost:10}],['Blessleaf',1,{shield:15,heal:10}],['Ghostpepper',2,{rage:10}],['Remedy Root',1,{heal:25}],['Purity Petal',1,{sugar:15}],
+ ['Mirage Herb',2,{invis:5}],['Dragonsage',3,{rage:12,shield:20}],['Spiritbloom',2,{regen:15}],['Ironwort',2,{shield:35}],['Voidpetal',3,{tp:1}],
+ ['Herb Bread',0,{heal:20}],['Moonberry Tart',1,{heal:25,shield:10}],['Dream Soup',1,{heal:20,regen:6}],['Fairy Salad',1,{heal:15,jumpb:8}],['Starlight Tea',1,{reveal:8,heal:10}],
+ ['Ember Stew',1,{heal:20,rage:5}],['Crystal Honey',2,{heal:30,mana:1}],['Lotus Dumpling',1,{heal:25}],['Mystic Porridge',1,{heal:20,sugar:10}],['Sunrise Juice',1,{boost:8,heal:10}],
+ ['Stamina Tonic',1,{boost:10}],['Antidote',1,{sugar:20}],['Awakening Brew',2,{reveal:10,boost:5}],['Focus Draught',2,{mana:1}],['Rage Elixir',3,{rage:15}],
+ ['Revive Draught',3,{revive:1}],['Holy Nectar',3,{heal:60,shield:30}],
+ ['Dream Fragment',3,null,{jump:.1}],['Soul Crystal',3,null,{regen:.8}],['Memory Shard',3,null,{gem:.2}],['Essence Dust',2,{mana:1}],['Stardust Vial',2,{jumpb:15}],
+ ['Phantom Powder',3,{invis:6}],['Celestial Pearl',3,null,{shreg:1.5}],['Heart Crystal',4,null,{regen:1.5}],['Wishstone',4,{gift:3}],['Tear of Dawn',4,{heal:100}],
+ ['Dreamcatcher',4,null,{haz:1}],['Moon Lantern',3,{reveal:8},null,40],['Spirit Bell',4,{stun:15},null,45],['Timeleaf Charm',3,null,{spd:.1}],['Lullaby Orb',4,{stun:25}],
+ ['Mirror of Mists',3,{invis:5},null,60],['Bookmark of Tales',3,null,{gem:.3}],['Key of Reverie',3,{journal:1}],['Hourglass of Stars',4,{freeze:4},null,90],['Codex of Dreams',4,null,{dmg:.1}]
+];
+const ACCESSORIES=[
+ ['Amethyst Crystal Crown',4,null,{dmg:.08,shreg:1}],['Crystal Circlet',3,null,{regen:.6}],['Moon Earrings',2,null,{jump:.08}],['Leaf Earrings',2,null,{spd:.04}],
+ ['Coin Amulet',2,null,{gem:.15}],['Crescent Necklace',3,null,{shreg:1}],['Vial Necklace',3,{heal:25},null,45],['Leaf Pendant',2,null,{regen:.4}],
+ ['Sapphire Ring',3,null,{dmg:.06}],['Wolf Ring',3,null,{spd:.06}],['Raven Ring',3,{reveal:6},null,50],['Celestial Ring',4,null,{dmg:.05,jump:.05}],
+ ['Elven Leather Belt',2,null,{spd:.05}],['Amethyst Belt',3,null,{shreg:1.2}],['Starry Embroidered Cape',4,null,{haz:1}],['Leaf Embroidered Cape',3,null,{regen:.8}],
+ ['Sturdy Fur Boots',2,null,{jump:.1}],['Fantasy Bootines',3,null,{spd:.08}],['Leather Satchel',2,null,{gem:.1}],['Botanical Hairpin',2,null,{regen:.3}],
+ ['Celestial Charm',3,null,{gem:.15,jump:.05}],['Compass Artifact',3,{journal:1},null,120],['Runestone',3,null,{dmg:.05}],['Ancient Key',4,{gift:3},null,300]
+];
+// d100 mysterious objects: odd, funny, sometimes useful. Found in bots' pockets and crates.
+const CURIOS=[
+ ['Mirror With No Reflection',{invis:6},60,'You vanish, just like your reflection.'],['Statuette of an Unknown Humanoid',{gems:5},0,'Someone will buy this.'],
+ ['Draconic Dictionary',{reveal:8},0,'You read the enemies’ minds. In Draconic.'],['Fist-Sized Stone Egg',{gift:2},0,'It hatches into loot!'],
+ ['Plank With an Acorn',{heal:15},0,'You eat the acorn. Surprisingly filling.'],['Unopenable Letter',{gems:15},0,'The letter opener opened your wallet instead.'],
+ ['Stuffed Random Monster',{stun:15},0,'It squeaks. Everyone stops to stare.'],['Portrait With Following Eyes',{reveal:12},90,'The eyes show you where everyone is.'],
+ ['Compass That Points Wrong',{journal:1},0,'It points at treasure, not north.'],['Bracelet of Teeth',{shield:25},0,'Somehow comforting.'],
+ ['Sword That Won’t Sharpen',{gems:1},0,'It is exactly as blunt as before.'],['Crystal That Shows a Key',{journal:1},0,'The crystal shows where the good loot is.'],
+ ['Bottle of Invisible Ink',{invis:8},0,'You spill it on yourself.'],['Map Leading Nowhere',{tp:1},0,'Nowhere turns out to be somewhere.'],
+ ['Necklace With a Spinning Portal',{tp:1},120,'The portal spins you away.'],['Carved Wooden Automaton',{ally:1},120,'It clicks, whirs and joins your side.'],
+ ['Stone Key the Size of a Pea',{gems:20},0,'It opens a tiny vault of Gems.'],['Completely Opaque Glasses',{invis:4},0,'If you can’t see them, they can’t see you.'],
+ ['Bag of Glass Marbles',{stun:10},0,'Enemies slip and fall.'],['Ribbon in an Impossible Knot',{shield:15},0,'The knot holds you together.'],
+ ['Flask That Never Empties',{heal:8},20,'Still full.'],['Drawing of Your Character',{gems:2},0,'It’s a good likeness.'],
+ ['Coral Arcane Symbol',{mana:1},0,'Your staffs hum with fresh charge.'],['Feather of a Sea Beast',{jumpb:12},0,'You feel light as foam.'],
+ ['Shape-Shifting Ink Stamp',{gift:1},0,'It stamps out a brand-new item.'],['Silent Instrument',{distract:20},60,'Nobody hears it, but everyone turns to look.'],
+ ['Sack Hewn From Stone',{shield:30},0,'Heavy, but it stops bullets.'],['Letter of Credit From a Fake Bank',{gems:40},0,'The bank doesn’t exist. The Gems do.'],
+ ['Remains That Won’t Decompose',{heal:20},0,'Best not to ask.'],['Seeds That Won’t Grow',{gems:3},0,'A collector pays 3 Gems for them.'],
+ ['Rune-Carved Skull',{reveal:10},0,'Its eyes glow toward every enemy.'],['Book of Crossed-Out Names',{rage:10},0,'You add a name. You feel furious.'],
+ ['Stew Pot That Never Runs Out',{heal:15},30,'Another bowl.'],['Star Map of the Wrong Sky',{tp:1},0,'You follow it somewhere unexpected.'],
+ ['Trapdoor to an Empty Demiplane',{invis:6},0,'You hide in the demiplane for a moment.'],['Lockpicks That Only Open Open Doors',{journal:1},0,'They mark every chest worth opening.'],
+ ['Ice That Is Warm',{sugar:20},0,'Hazards can’t touch you.'],['Abacus That Miscalculates',{gems:-1},0,'It recounts your Gems…'],
+ ['Purple Wind in a Jar',{boost:8,jumpb:8},0,'Whoosh!'],['Crystal Ball of Dark Rooms',{reveal:6},0,'Dark, but you spot a few enemies.'],
+ ['Bones That Always Roll the Same',{gems:7},300,'Seven. Again.'],['Quill That Changes Your Handwriting',{shield:10},0,'You write yourself a stronger shield.'],
+ ['Seal With No Imprint',{gems:5},0,'Officially worthless. Unofficially, 5 Gems.'],['Coat With Endless Pockets',{gift:1},180,'You find something in a pocket.'],
+ ['Fence You Can’t Cross',{wall:1},60,'A fence springs up in front of you.'],['Bag That Swallows Its Contents',{gift:-1},0,'Something comes back out…'],
+ ['Soap That Smells Terrible',{distract:15},0,'Enemies keep their distance.'],['Fruit You Can’t Eat',{gems:2},0,'It bounces. You sell it.'],
+ ['Hourglass of Uneven Time',{freeze:3},120,'Time stumbles for everyone else.'],['Feather That Turns Black',{invis:3},0,'Darkness wraps around you.'],
+ ['Dagger That Poisons Its Holder',{heal:-10,rage:15},0,'Ouch. But now you’re angry.'],['Diamond That Teleports to Pouches',{gems:25},0,'It hops into your pocket.'],
+ ['Ball That Plays Itself',{distract:20},60,'Enemies watch the ball instead of you.'],['String of Unbreakable Length',{jumpb:10},0,'You swing up and away.'],
+ ['Matches That Light Underwater',{sugar:15},0,'Nothing can put you out.'],['Snail Shell That Whispers',{reveal:15},0,'It whispers where everyone is.'],
+ ['Cracked Plates',{shield:20},0,'You wear them as armour.'],['Yarn That Teleports to Cats',{tp:1},0,'There must be a cat somewhere.'],
+ ['Crown Made of Garbage',{rage:8},0,'You feel like royalty. Angry royalty.'],['Pile of Obviously Fake Money',{gems:1},0,'Nobody accepts it, except one very kind vendor.']
+];
+const ini=n=>n.replace(/[^A-Za-z ]/g,'').split(' ').filter(Boolean).map(w=>w[0]).join('').toUpperCase().slice(0,3).padEnd(3,'·');
+const EFF_TXT={heal:v=>v<0?`Costs ${-v} HP`:`Restores ${v} HP`,shield:v=>`+${v} shield`,regen:v=>`Heals for ${v}s`,reveal:v=>`Reveals enemies for ${v}s`,invis:v=>`Invisible for ${v}s`,boost:v=>`+40% speed for ${v}s`,jumpb:v=>`Super jumps for ${v}s`,sugar:v=>`Hazard immunity for ${v}s`,mana:()=>'Refills every staff',rage:v=>`+25% damage for ${v}s`,revive:()=>'Revives you once at 50 HP',gems:v=>v<0?'Random Gems':`+${v} Gems`,tp:()=>'Teleports you somewhere random',gift:v=>v<0?'Might give an item back':`Gives a random ${TIERS[v].n} item`,stun:v=>`Stuns enemies within ${v} m`,freeze:v=>`Stops time for ${v}s`,journal:()=>'Marks Epic+ crates on your map',ally:()=>'Summons a helper for 20s',distract:v=>`Distracts enemies within ${v} m`,wall:()=>'Raises a barrier'};
+const MOD_TXT={spd:v=>`+${Math.round(v*100)}% speed`,dmg:v=>`+${Math.round(v*100)}% damage`,regen:v=>`+${v} HP/s`,shreg:v=>`+${v} shield/s`,gem:v=>`+${Math.round(v*100)}% Gems`,jump:v=>`+${Math.round(v*100)}% jump`,haz:()=>'Hazard immunity'};
+function effStats(e,m,reuse){const a=[];if(e)for(const k in e)if(EFF_TXT[k])a.push(EFF_TXT[k](e[k]));if(m)for(const k in m)a.push(MOD_TXT[k](m[k]));if(reuse)a.push(`reusable every ${reuse}s`);else if(e)a.push('single use');return a.join(' · ')}
+const HERB_IDS=[],ACC_IDS=[],CURIO_IDS=[];
+HERBALS.forEach(([n,t,e,m,r],i)=>{const id='hb'+i;ITEMS[id]={name:n,tier:t,kind:e?'use':'passive',eff:e||undefined,mods:m||undefined,reuse:r||0,icon:ini(n),lore:'Magical Herbals & Dream Relics',stats:effStats(e,m,r)};HERB_IDS.push(id)});
+ACCESSORIES.forEach(([n,t,e,m,r],i)=>{const id='ac'+i;ITEMS[id]={name:n,tier:t,kind:e?'use':'passive',eff:e||undefined,mods:m||undefined,reuse:r||0,icon:ini(n),lore:'Enchanted accessory',stats:effStats(e,m,r)};ACC_IDS.push(id)});
+CURIOS.forEach(([n,e,r,msg],i)=>{const id='cu'+i;ITEMS[id]={name:n,tier:2,curio:true,kind:'use',eff:e,reuse:r||0,msg,icon:ini(n),lore:'A mysterious object found in someone’s pocket.',stats:effStats(e,null,r)};CURIO_IDS.push(id)});
+for(const id of HERB_IDS.concat(ACC_IDS)){const t=ITEMS[id].tier;POOLS[t].push(id)}
+
 // Clothing: a cosmetic layer over any rig. Same hitbox for everyone.
 const CLOTHES={
   none:{name:'No outfit',shape:null,c1:'#ecebff',c2:'#3a3580'},
@@ -475,6 +547,8 @@ const STALLS=[
   {id:'armory',name:'Armory',col:0xff7a2e,items:[['brick',10,'Comes back every time'],['sign',30,'Knocks enemies flying'],['pitchfork',35,'Longest melee reach'],['torch',35,'Sets enemies on fire'],['stake',60,'2.5× damage to raid bosses'],['carbine',40,'Reliable laser'],['rifle',90,'Fast plasma fire'],['sword',200,'Plasma Excalibur'],['retro',350,'Bouncing pixel bullets']]},
   {id:'wondrous',name:'Wondrous Wagon',col:0xffc24a,items:[['flute',35,'Float up; butterflies distract enemies'],['lilypad',40,'Summon a floating raft'],['dragonbreath',40,'Fiery burst on impact'],['coconut',45,'Throw: stuns everything nearby'],['sunbox',45,'Blinding flash'],['journal',60,'Marks every Epic+ crate on your map'],['pixie',120,'Fly and turn invisible']]},
   {id:'wardrobe',name:'Wardrobe',col:0x3fe0ff,items:[]},
+  {id:'jeweller',name:'Jeweller',col:0xd07bff,items:ACC_IDS.filter(id=>ITEMS[id].tier<=3).map(id=>[id,[0,15,40,90,180][ITEMS[id].tier],ITEMS[id].stats])},
+  {id:'herbalist',name:'Herbalist',col:0x8cff5a,items:HERB_IDS.filter(id=>ITEMS[id].tier<=2).map(id=>[id,[5,12,30][ITEMS[id].tier],ITEMS[id].stats])},
   {id:'forge',name:'Infinite Forge',col:0xff5fd2,items:[]},
   {id:'cursed',name:'Cursed Curios',col:0x2a9a8a,items:[['voidshard',80,''],['boneidol',220,''],['soullantern',250,''],['shadowdagger',250,''],['mirror',260,''],['spiritorb',280,''],['mask',280,''],['bleedcrown',300,''],['stormstaff',320,'']]}
 ];
@@ -705,7 +779,7 @@ const store={get(k,d){try{const v=localStorage.getItem('oa_'+k);return v==null?d
 me.gems=store.get('gems',100);me.pack=store.get('pack',[]);me.profile=store.get('profile',{cls:null,race:null,align:null,vibe:null,bg:null});
 me.trophies=store.get('trophies',[]);
 function winTrophy(why){const left=TROPHIES.filter(t=>!me.trophies.includes(t));if(!left.length){earn(150,'trophy vault full');return}const t=pick(left);me.trophies.push(t);store.set('trophies',me.trophies);addItem(t);banner('TROPHY WON: '+ITEMS[t].name+(why?' · '+why:''),'var(--arcade)');emit('alert',{text:me.name+' won the '+ITEMS[t].name});renderVault()}
-function renderVault(){const el=document.getElementById('vault');if(!el)return;el.title='';el.textContent='Forged items discovered: '+store.get('codexN',0)+'. '+me.trophies.length?'Trophy Vault: '+me.trophies.map(t=>ITEMS[t].name).join(', '):'Trophy Vault: empty. Win matches, raids and the Final Gate to earn trophies.'}
+function renderVault(){const el=document.getElementById('vault');if(!el)return;el.title='';el.textContent='Forged items discovered: '+store.get('codexN',0)+'. Curios collected: '+store.get('curios',[]).length+'/'+CURIO_IDS.length+'. '+me.trophies.length?'Trophy Vault: '+me.trophies.map(t=>ITEMS[t].name).join(', '):'Trophy Vault: empty. Win matches, raids and the Final Gate to earn trophies.'}
 function gemsChanged(){store.set('gems',me.gems);const t=me.arch?'∞':String(me.gems);['gemCount','gemTitle','gemStore'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=t})}
 function earn(n,why){if(n<=0)return;if(me.mods&&me.mods.gem)n=Math.round(n*(1+me.mods.gem));me.gems+=n;gemsChanged();feed('+'+n+' Gems'+(why?' · '+why:''),'#3fe0ff')}let frozenUntil=0,chalkDoor=null,bubbleMesh=null;
 const bots=[];const crates=[];const projectiles=[];const fx=[];
@@ -836,13 +910,14 @@ const promptEl=document.getElementById('prompt'),progEl=document.getElementById(
 // ---------- crates ----------
 function rollTier(boost=0){let r=rnd()*100;for(let t=5;t>=0;t--){}let acc=0;const w=TIER_W.map((v,i)=>i>=3?v*(1+boost):v);const tot=w.reduce((a,b)=>a+b);r=rnd()*tot;for(let i=0;i<6;i++){acc+=w[i];if(r<acc)return i}return 0}
 function spawnCrate(x,z,tier,item){
+  if(!item&&rnd()<.08){item=pick(CURIO_IDS);tier=2}
   const y=groundHeight(x,z,50);
   const g=new THREE.Group();const col=new THREE.Color(TIERS[tier].c);
   const box=new THREE.Mesh(new THREE.BoxGeometry(1.4,1,1),new THREE.MeshLambertMaterial({color:0x1d1a4d,emissive:col,emissiveIntensity:.35}));box.position.y=.5;g.add(box);
   const edge=new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry),new THREE.LineBasicMaterial({color:col}));edge.position.y=.5;g.add(edge);
   if(tier>=4){const beam=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,tier===5?60:30,8,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.35}));beam.position.y=tier===5?30:15;g.add(beam)}
   g.position.set(x,y,z);scene.add(g);
-  if(!item&&tier>=1&&rnd()<.55)item=genId(tier);
+  if(!item&&tier>=1&&rnd()<.45)item=genId(tier);
   crates.push({g,tier,item:item||pick(POOLS[tier]),x,z,y});
 }
 function groundHeight(x,z,fromY){let h=0;for(const c of COL){if(x>c.min.x&&x<c.max.x&&z>c.min.z&&z<c.max.z&&c.max.y<=fromY&&c.max.y>h)h=c.max.y}return h}
@@ -951,7 +1026,7 @@ function startMatch(){
   matchStart=Date.now();
   for(const p of peers.values()){const mt=p.pres&&p.pres.mt;if(mt&&Date.now()-mt<MATCH_LEN*1000-60000&&mt<matchStart)matchStart=mt}
   const late=(Date.now()-matchStart)/1000>20;
-  Object.assign(me,{boost:0,jumpb:0,invis:0,cloudRide:0,sugar:0,pixie:0,regen:0,garlic:0,journal:false,orbT:0,hp:100,shield:0,alive:true,kills:0,score:0,inv:0,heat:0,keys:{copper:false,jade:false,crystal:false},sel:0,safeTime:0,safeCool:0,glitchTokens:0});
+  Object.assign(me,{rage:0,revive:0,reuseCool:{},boost:0,jumpb:0,invis:0,cloudRide:0,sugar:0,pixie:0,regen:0,garlic:0,journal:false,orbT:0,hp:100,shield:0,alive:true,kills:0,score:0,inv:0,heat:0,keys:{copper:false,jade:false,crystal:false},sel:0,safeTime:0,safeCool:0,glitchTokens:0});
   me.inventory=new Array(40).fill(null);
   const C=CLASSES[me.profile.cls]||CLASSES.warrior;
   if(me.arch){for(const id of ARCH_KIT)addItem(id);addItem('med');me.archCool={};emit('arch',{});setTimeout(()=>banner('★ THE ARCHITECT HAS ENTERED THE ARENA','#b47bff'),1200)}else{for(const id of C.start)addItem(id);addItem('med')}
@@ -997,7 +1072,15 @@ function fire(){
   }
   if(def.kind==='throw'){const d=new THREE.Vector3();camera.getWorldDirection(d);spawnProj(camera.position.clone().addScaledVector(d,1),d.multiplyScalar(def.speed).add(new THREE.Vector3(0,6,0)),def,'me');consume(me.sel);me.cooldown=.6;return}
   if(def.kind==='use'){
-    if(def.eff){const e=def.eff;if(e.heal)me.hp=Math.min(100,me.hp+e.heal);if(e.shield)me.shield=Math.min(100,me.shield+e.shield);if(e.invis)me.invis=e.invis;if(e.boost)me.boost=e.boost;if(e.reveal)revealUntil=now+e.reveal;if(e.sugar)me.sugar=e.sugar;if(e.jumpb)me.jumpb=e.jumpb;feed('You drink the '+def.name,TIERS[def.tier].c)}
+    if(def.reuse){const cd=(me.reuseCool||(me.reuseCool={}))[s.id]||0;if(cd>now){feed(def.name+' recharging '+Math.ceil(cd-now)+'s');me.cooldown=.3;return}me.reuseCool[s.id]=now+def.reuse}
+    if(def.eff){const e=def.eff;if(e.heal)me.hp=Math.max(1,Math.min(100,me.hp+e.heal*(has('mirror')&&e.heal>0?.5:1)));if(e.shield)me.shield=Math.min(100,me.shield+e.shield);if(e.invis)me.invis=e.invis;if(e.boost)me.boost=e.boost;if(e.reveal)revealUntil=now+e.reveal;if(e.sugar)me.sugar=e.sugar;if(e.jumpb)me.jumpb=e.jumpb;
+      if(e.regen)me.regen=e.regen;if(e.mana){for(const x of me.inventory)if(x&&ITEMS[x.id].kind==='staff')x.c=ITEMS[x.id].charges}if(e.rage)me.rage=e.rage;if(e.revive)me.revive=1;
+      if(e.gems)earn(e.gems<0?Math.floor(rnd()*31):e.gems,def.name);if(e.tp){const rs=ringState((Date.now()-matchStart)/1000);const a=rnd()*Math.PI*2,d=rnd()*rs.r*.85;me.pos.set(Math.cos(a)*d,40,Math.sin(a)*d);me.vel.set(0,0,0)}
+      if(e.gift){if(e.gift>0||rnd()<.5){const g=pick(POOLS[Math.max(1,e.gift)]);addItem(g);feed('Got '+ITEMS[g].name,TIERS[ITEMS[g].tier].c)}else feed('It swallowed the item. Nothing came back.')}
+      if(e.stun){for(const b of bots)if(b.alive&&!b.ally&&b.pos.distanceTo(me.pos)<e.stun)b.stun=now+3}if(e.distract){for(const b of bots)if(b.alive&&b.pos.distanceTo(me.pos)<e.distract){b.distract=now+5;b.target=null}}
+      if(e.freeze)frozenUntil=now+e.freeze;if(e.journal)me.journal=true;if(e.wall)castSpell('wall');
+      if(e.ally){const a=spawnBot('AUTOMATON',me.pos.x+2,me.pos.z+2,{color:'#c8a070',clone:true,hp:100,dmg:10});a.ally=true;a.expire=now+20}
+      feed(def.msg||('You use the '+def.name),TIERS[def.tier].c)}
     if(def.garlic){me.garlic=def.garlic;feed('Garlic: ghosts and dragons can’t touch you','#ecebff')}
     if(def.journal){me.journal=true;feed('Journal: Epic+ crates marked on your map','#ffc24a')}
     if(def.voidtp){const rs=ringState((Date.now()-matchStart)/1000);const a=rnd()*Math.PI*2,d=rnd()*rs.r*.9;me.pos.set(Math.cos(a)*d,40,Math.sin(a)*d);me.vel.set(0,0,0);burst(me.pos.x,me.pos.y,me.pos.z,0x6a2bb0,30);banner('THE VOID TAKES YOU…','#6a2bb0')}
@@ -1011,7 +1094,7 @@ function fire(){
     if(def.heal){if(me.hp>=100)return feed('Health is full');me.hp=Math.min(100,me.hp+def.heal*(has('mirror')?.5:1))}
     if(def.shield){if(me.shield>=100)return feed('Shield is full');me.shield=Math.min(100,me.shield+def.shield)}
     if(def.inv){me.inv=def.inv;banner('INVINCIBLE!','var(--fantasy)')}
-    consume(me.sel);me.cooldown=.6;return;
+    if(!def.reuse)consume(me.sel);me.cooldown=.6;return;
   }
   if(def.kind==='passive'){feed(def.name+' works while carried');me.cooldown=.5;return}
   if(def.arch&&!['melee','proj'].includes(def.kind)){
@@ -1054,13 +1137,14 @@ function burst(x,y,z,color,n=40){for(let i=0;i<n;i++){const m=new THREE.Mesh(new
 function damageBot(b,dmg,src){
   if(!b.alive)return;if(inSafe(b.pos))return;
   if(src==='me'&&me.profile.vibe&&sectorAt(me.pos.x,me.pos.z)===me.profile.vibe)dmg*=1.15;
-  if(src==='me'&&has('bleedcrown'))dmg*=1.3;if(src==='me'&&me.mods.dmg)dmg*=1+me.mods.dmg;
+  if(src==='me'&&has('bleedcrown'))dmg*=1.3;if(src==='me'&&me.rage>0)dmg*=1.25;if(src==='me'&&me.mods.dmg)dmg*=1+me.mods.dmg;
   b.hp-=dmg;if(src==='me')b.target=me;
   if(b.hp<=0){b.alive=false;scene.remove(b.av.group);burst(b.pos.x,b.pos.y+1,b.pos.z,0xffc24a);
     const wasBounty=bountyRef===b;
     if(src==='me'&&has('soullantern'))me.hp=Math.min(100,me.hp+20);
     if(src==='me'){me.kills++;earn(wasBounty?60:10,wasBounty?'bounty':'');me.score+=100+(wasBounty?500:0);feed(`You eliminated ${b.name}${wasBounty?' · BOUNTY CLAIMED +500':''}`,'#8cff5a');if(wasBounty)addItem(pick(POOLS[4]))}
     else if(src&&src.name){src.kills++;src.score+=100;feed(`${src.name} eliminated ${b.name}`)}
+    if(!b.clone&&rnd()<.25){spawnCrate(b.pos.x+1,b.pos.z+1,2,pick(CURIO_IDS))}
     if(!b.clone&&rnd()<.45)spawnCrate(b.pos.x,b.pos.z,Math.min(5,rollTier(.5)+1));
   }
 }
@@ -1073,6 +1157,7 @@ function takeDamage(d,src,kind){
   me.hp-=d;if(me.hp<=0)die(src,kind);
 }
 function die(src,kind){
+  if(me.revive>0){me.revive=0;me.hp=50;me.inv=2;banner('REVIVE DRAUGHT: back on your feet','var(--pixel)');return}
   if(has('oneup')){consumeId('oneup');me.hp=100;me.inv=2;banner('EXTRA LIFE! The 1-Up Amulet saved you','var(--pixel)');emit('alert',{text:me.name+' used a 1-Up Amulet'});return}
   dismount();me.alive=false;state='dead';burst(me.pos.x,me.pos.y+1,me.pos.z,0xffc24a,70);
   // drop best item as a crate
@@ -1457,7 +1542,7 @@ function updatePlayer(dt,t,rs){
   if(me.profile.cls==='holy'&&!me.arch)me.hp=Math.min(100,me.hp+dt);
   me.staffT=(me.staffT||0)+dt*(me.profile.cls==='mage'?2:1);if(me.staffT>=15){me.staffT=0;let ch=false;for(const x of me.inventory)if(x&&ITEMS[x.id].kind==='staff'&&x.c<ITEMS[x.id].charges){x.c++;ch=true}if(ch)renderInv()}
   if(me.cloudRide>0){me.cloudRide-=dt;if(me.vel.y<-2)me.vel.y=-2}
-  if(me.boost>0)me.boost-=dt;if(me.jumpb>0)me.jumpb-=dt;
+  if(me.boost>0)me.boost-=dt;if(me.rage>0)me.rage-=dt;if(me.jumpb>0)me.jumpb-=dt;
   if(me.mods.regen)me.hp=Math.min(100,me.hp+me.mods.regen*dt);if(me.mods.shreg&&me.shield<50)me.shield=Math.min(50,me.shield+me.mods.shreg*dt);if(me.mods.haz&&me.sugar<1)me.sugar=1;
   if(me.sugar>0)me.sugar-=dt;if(me.garlic>0)me.garlic-=dt;
   if(has('bleedcrown')&&!me.arch)me.hp=Math.max(10,me.hp-dt);
@@ -1506,7 +1591,7 @@ function updatePlayer(dt,t,rs){
     else if(chalkDoor.open&&d<1.6){const t2=chalkDoor.dest.pos();me.pos.set(t2.x,t2.y,t2.z);me.vel.set(0,0,0);burst(me.pos.x,me.pos.y+1,me.pos.z,pick(RAINBOW),40);feed('Stepped through to '+chalkDoor.dest.name,'#b47bff');scene.remove(chalkDoor.g);chalkDoor=null}
     else if(chalkDoor&&chalkDoor.open&&d<6)prompt='Step through the door';}
   const near=crates.filter(c=>Math.hypot(c.x-me.pos.x,c.z-me.pos.z)<3&&Math.abs(c.y-me.pos.y)<2.5).sort((a,b)=>Math.hypot(a.x-me.pos.x,a.z-me.pos.z)-Math.hypot(b.x-me.pos.x,b.z-me.pos.z))[0];
-  if(near){prompt=`[E] Open ${TIERS[near.tier].n} crate`;if(keysDown.has('KeyE')){keysDown.delete('KeyE');if(addItem(near.item)){scene.remove(near.g);crates.splice(crates.indexOf(near),1);codexAdd(near.item);feed(`${TIERS[near.tier].n} · ${ITEMS[near.item].name}`,TIERS[near.tier].c);earn([1,2,4,8,15,30][near.tier]);if(near.tier===5){banner('MYTHIC FOUND: '+ITEMS[near.item].name,'var(--arcade)');emit('alert',{text:me.name+' found a Mythic '+ITEMS[near.item].name})}}}}
+  if(near){prompt=`[E] Open ${TIERS[near.tier].n} crate`;if(keysDown.has('KeyE')){keysDown.delete('KeyE');if(addItem(near.item)){scene.remove(near.g);crates.splice(crates.indexOf(near),1);codexAdd(near.item);if(ITEMS[near.item].curio){const cs=store.get('curios',[]);if(!cs.includes(near.item)){cs.push(near.item);store.set('curios',cs);feed('Curio collection: '+cs.length+'/'+CURIO_IDS.length,'#ffc24a')}}feed(`${TIERS[near.tier].n} · ${ITEMS[near.item].name}`,TIERS[near.tier].c);earn([1,2,4,8,15,30][near.tier]);if(near.tier===5){banner('MYTHIC FOUND: '+ITEMS[near.item].name,'var(--arcade)');emit('alert',{text:me.name+' found a Mythic '+ITEMS[near.item].name})}}}}
   // race
   if(race&&!me.keys.copper){
     if(!race.active){const p=race.pts[0];if(Math.hypot(me.pos.x-p[0],me.pos.z-p[1])<4){race.active=true;race.idx=1;race.t=0;race.npcT=0;race.npc.visible=true;banner('COPPER KEY RACE! Beat the NPC to the last ring','#d98a4e')}else if(Math.hypot(me.pos.x-p[0],me.pos.z-p[1])<15)prompt='Enter the green ring to start the Copper Key race'}
